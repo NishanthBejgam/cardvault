@@ -52,6 +52,12 @@ img,video{display:block;max-width:100%}
 .qr img{width:100%;max-width:240px;aspect-ratio:1;image-rendering:pixelated}
 .qr span{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px}
 .qr svg{width:20px;height:20px}
+/* laptop: QR size follows the panel height so both codes and labels always fit */
+@media(min-width:900px){
+  .qrs{flex:1;min-height:0}
+  .qr{justify-content:center;min-height:0}
+  .qr img{width:auto;height:clamp(120px,calc(var(--hero-h) - 350px),250px)}
+}
 
 /* features */
 h2{font-size:clamp(26px,3.4vw,38px);font-weight:800;letter-spacing:-.03em;margin-bottom:28px}
@@ -78,10 +84,11 @@ h2{font-size:clamp(26px,3.4vw,38px);font-weight:800;letter-spacing:-.03em;margin
 
 /* testimonials */
 section{padding:56px 0}
-.wall{columns:1;column-gap:18px}
-@media(min-width:820px){.wall{columns:2}}
-.tw{break-inside:avoid;margin:0 0 18px;border-radius:20px;overflow:hidden;background:#000;box-shadow:0 0 0 1px #2f3336,0 20px 40px -24px rgba(0,0,0,.9)}
-.tw img{width:100%;height:auto}
+/* every tile the same size; screenshots keep one text scale (width = source px / 900) */
+.wall{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:820px){.wall{grid-template-columns:1fr 1fr}}
+.tw{aspect-ratio:2.5;display:flex;align-items:center;border-radius:20px;overflow:hidden;background:#000;box-shadow:0 0 0 1px #2f3336,0 20px 40px -24px rgba(0,0,0,.9)}
+.tw img{width:calc(var(--w) / 900 * 100%);height:auto}
 
 footer{padding:24px 0 48px;text-align:center;color:var(--muted);font-weight:700;font-size:14px;display:flex;justify-content:center;align-items:center;gap:10px}
 footer img{width:32px;height:32px;border-radius:9px}
@@ -137,17 +144,16 @@ footer a{color:#c4b5fd;text-decoration:none}
   <section>
     <h2>What CCGeeks say</h2>
     <div class="wall">
-      <figure class="tw"><img src="assets/t/1.png" alt="Used Card Vault for an RBL milestone spend. Thanks for the amazing app." loading="lazy"></figure>
-      <figure class="tw"><img src="assets/t/13.png" alt="This is an app every CC Geek must have." loading="lazy"></figure>
-      <figure class="tw"><img src="assets/t/4.png" alt="Simple to use and user friendly." loading="lazy"></figure>
-      <figure class="tw"><img src="assets/t/7.png" alt="Difficult to carry 15 to 20 cards when I travel. This app solved my problem." loading="lazy"></figure>
-      <figure class="tw"><img src="assets/t/2.png" alt="Uploaded most of the data with CSV, super easy and fast." loading="lazy"></figure>
-      <figure class="tw"><img src="assets/t/11.png" alt="One of the important apps for me in recent times." loading="lazy"></figure>
-      <figure class="tw"><img src="assets/t/12.png" alt="Been trying the app for 2 days. Love it!" loading="lazy"></figure>
-      <figure class="tw"><img src="assets/t/6.png" alt="Such a nice UI with lot of features." loading="lazy"></figure>
-      <figure class="tw"><img src="assets/t/8.png" alt="The app definitely looks worth the money." loading="lazy"></figure>
-      <figure class="tw"><img src="assets/t/10.png" alt="Installed Card Vault and liked it very much." loading="lazy"></figure>
-      <figure class="tw"><img src="assets/t/9.png" alt="Was trying to make something similar. Will give it a try." loading="lazy"></figure>
+      <figure class="tw"><img style="--w:792" src="assets/t/1.png" alt="Used Card Vault for an RBL milestone spend. Thanks for the amazing app." loading="lazy"></figure>
+      <figure class="tw"><img style="--w:828" src="assets/t/13.png" alt="This is an app every CC Geek must have." loading="lazy"></figure>
+      <figure class="tw"><img style="--w:790" src="assets/t/4.png" alt="Simple to use and user friendly." loading="lazy"></figure>
+      <figure class="tw"><img style="--w:741" src="assets/t/7.png" alt="Difficult to carry 15 to 20 cards when I travel. This app solved my problem." loading="lazy"></figure>
+      <figure class="tw"><img style="--w:897" src="assets/t/2.png" alt="Uploaded most of the data with CSV, super easy and fast." loading="lazy"></figure>
+      <figure class="tw"><img style="--w:739" src="assets/t/11.png" alt="One of the important apps for me in recent times." loading="lazy"></figure>
+      <figure class="tw"><img style="--w:873" src="assets/t/12.png" alt="Been trying the app for 2 days. Love it!" loading="lazy"></figure>
+      <figure class="tw"><img style="--w:876" src="assets/t/6.png" alt="Such a nice UI with lot of features." loading="lazy"></figure>
+      <figure class="tw"><img style="--w:727" src="assets/t/8.png" alt="The app definitely looks worth the money." loading="lazy"></figure>
+      <figure class="tw"><img style="--w:703" src="assets/t/10.png" alt="Installed Card Vault and liked it very much." loading="lazy"></figure>
     </div>
   </section>
 
