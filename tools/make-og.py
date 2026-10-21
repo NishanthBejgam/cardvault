@@ -7,7 +7,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "tools", "og.html")
-OUT = os.path.join(ROOT, "assets", "og-cover.jpg")
+OUT = os.path.join(ROOT, "assets", "og-card.jpg")
 
 with sync_playwright() as p:
     b = p.chromium.launch()
@@ -17,5 +17,5 @@ with sync_playwright() as p:
     png = pg.screenshot()
     b.close()
 
-Image.open(BytesIO(png)).convert("RGB").save(OUT, quality=88, optimize=True, progressive=True)
+Image.open(BytesIO(png)).convert("RGB").save(OUT, quality=88)
 print(OUT, os.path.getsize(OUT) // 1024, "KB")
