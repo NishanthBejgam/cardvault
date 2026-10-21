@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Card Vault at a Glance</title>
+<meta name="description" content="Card Vault by YourCardJourney: a fully offline card management system for CCGeeks. Demo, features and what users say.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --v1:#6366f1; --v2:#7c3aed; --v3:#9333ea; --ink-v:#4b3fc8; --stripe:#ff7a2f;
+  --bg:#f6f5ff; --bg2:#eeebff; --surface:#ffffff; --line:#e3defa;
+  --text:#17142b; --muted:#5d5878; --soft:#8b86a8;
+  --chip:#f1eeff; --shadow:0 18px 50px -18px rgba(76,52,190,.35);
+  --grad:linear-gradient(135deg,var(--v1),var(--v2) 55%,var(--v3));
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e0c1a; --bg2:#151229; --surface:#1a1730; --line:#2c2750;
+  --text:#f1efff; --muted:#b2acd4; --soft:#8580a8; --chip:#231f40;
+  --shadow:0 18px 50px -18px rgba(0,0,0,.7);
+}}
+:root[data-theme="dark"]{
+  --bg:#0e0c1a; --bg2:#151229; --surface:#1a1730; --line:#2c2750;
+  --text:#f1efff; --muted:#b2acd4; --soft:#8580a8; --chip:#231f40;
+  --shadow:0 18px 50px -18px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font:400 16px/1.55 "Plus Jakarta Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img,video{display:block;max-width:100%}
+a{color:inherit}
+.wrap{max-width:1160px;margin:0 auto;padding:0 16px}
+@media(min-width:720px){.wrap{padding:0 28px}}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:0;z-index:20;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg) 82%,transparent);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand img{width:36px;height:36px;border-radius:10px;box-shadow:0 6px 16px -6px rgba(99,102,241,.7)}
+.brand b{font-weight:800;font-size:17px;letter-spacing:-.01em;display:block;line-height:1.1}
+.brand small{display:block;font-size:10px;font-weight:700;letter-spacing:.16em;color:var(--soft)}
+.top nav{margin-left:auto;display:flex;gap:4px}
+.top nav a{text-decoration:none;font-weight:600;font-size:14px;color:var(--muted);padding:8px 12px;border-radius:999px}
+.top nav a:hover{background:var(--chip);color:var(--text)}
+@media(max-width:640px){.top nav a:not(.cta){display:none}}
+.top nav a.cta{background:var(--grad);color:#fff}
+
+/* ---------- hero ---------- */
+.hero{position:relative;padding:56px 0 40px;overflow:clip}
+.hero::before{content:"";position:absolute;inset:-30% -10% auto;height:620px;background:radial-gradient(closest-side,rgba(124,58,237,.22),transparent 70%),radial-gradient(closest-side at 80% 30%,rgba(255,122,47,.13),transparent 70%);pointer-events:none}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ink-v);background:var(--chip);border:1px solid var(--line);padding:6px 12px 6px 8px;border-radius:999px}
+:root[data-theme="dark"] .eyebrow{color:#c7bfff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .eyebrow{color:#c7bfff}}
+.eyebrow i{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.18)}
+h1{font-size:clamp(32px,5.4vw,58px);line-height:1.05;letter-spacing:-.035em;font-weight:800;margin:18px 0 14px;max-width:16ch}
+h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{font-size:clamp(16px,1.6vw,19px);color:var(--muted);max-width:58ch}
+.stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.stat{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 14px;font-size:14px;font-weight:600;color:var(--muted)}
+.stat b{color:var(--text);font-weight:800}
+
+.stage{position:relative;display:grid;grid-template-columns:1fr;gap:28px;margin-top:40px;align-items:center}
+@media(min-width:900px){.stage{grid-template-columns:1fr 1fr;gap:40px}}
+
+.phone{position:relative;margin:0 auto;width:min(330px,82vw);aspect-ratio:1080/1920;border-radius:44px;padding:11px;background:#121022;box-shadow:var(--shadow),inset 0 0 0 2px #2c2850}
+.phone::after{content:"";position:absolute;top:20px;left:50%;translate:-50% 0;width:84px;height:22px;border-radius:20px;background:#121022;z-index:2}
+.phone video,.phone .screen{width:100%;height:100%;object-fit:cover;border-radius:34px;background:#000}
+.phone-wrap{position:relative}
+.phone-wrap .tag{position:absolute;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px;font-size:13px;font-weight:700;box-shadow:var(--shadow);display:flex;align-items:center;gap:8px}
+.phone-wrap .tag svg{width:18px;height:18px;color:var(--v2)}
+.phone-wrap .t1{left:max(0px,calc(50% - 250px));top:16%}
+.phone-wrap .t2{right:max(0px,calc(50% - 250px));top:56%}
+@media(max-width:560px){.phone-wrap .tag{display:none}}
+.play{position:absolute;z-index:4;left:50%;bottom:28px;translate:-50% 0;border:0;cursor:pointer;background:rgba(18,16,34,.72);color:#fff;font:600 13px/1 inherit;padding:10px 16px;border-radius:999px;display:flex;gap:8px;align-items:center;backdrop-filter:blur(6px)}
+.play svg{width:14px;height:14px}
+
+.get{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:28px;padding:14px;box-shadow:var(--shadow);max-width:500px;margin:0 auto;width:100%}
+.get img{border-radius:18px;width:100%}
+.get .links{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-weight:700;font-size:14px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--chip);color:var(--text);transition:transform .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn.primary{background:var(--grad);color:#fff;border-color:transparent}
+.btn svg{width:18px;height:18px;flex:none}
+
+/* ---------- sections ---------- */
+section{padding:72px 0}
+.sec-head{max-width:720px;margin-bottom:34px}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--v2)}
+h2{font-size:clamp(26px,3.6vw,40px);line-height:1.1;letter-spacing:-.03em;font-weight:800;margin:10px 0 10px}
+.sec-head p{color:var(--muted);font-size:17px}
+
+/* feature explorer */
+.explorer{display:grid;grid-template-columns:1fr;gap:28px;align-items:start}
+@media(min-width:900px){.explorer{grid-template-columns:1.05fr .95fr;gap:48px}}
+.flist{display:flex;flex-direction:column;gap:8px}
+.fbtn{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start;padding:14px 16px;border-radius:18px;border:1px solid transparent;transition:background .2s,border-color .2s}
+.fbtn:hover{background:var(--surface)}
+.fbtn:focus-visible{outline:2px solid var(--v2);outline-offset:2px}
+.fbtn .ic{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:var(--chip);color:var(--v2);transition:background .2s,color .2s}
+.fbtn .ic svg{width:22px;height:22px}
+.fbtn h3{font-size:16.5px;font-weight:700;letter-spacing:-.01em;line-height:1.3}
+.fbtn p{font-size:14.5px;color:var(--muted);margin-top:3px;display:none}
+.fbtn .bar{grid-column:2;height:3px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:10px;display:none}
+.fbtn .bar i{display:block;height:100%;width:0;background:var(--grad)}
+.fbtn.on{background:var(--surface);border-color:var(--line);box-shadow:var(--shadow)}
+.fbtn.on .ic{background:var(--grad);color:#fff}
+.fbtn.on p,.fbtn.on .bar{display:block}
+.fbtn.on.auto .bar i{animation:fill var(--dur,5s) linear forwards}
+@keyframes fill{to{width:100%}}
+@media(max-width:899px){
+  .flist{flex-direction:row;overflow-x:auto;scroll-snap-type:x mandatory;gap:8px;padding:4px 2px 10px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none}
+  .flist::-webkit-scrollbar{display:none}
+  .fbtn{flex:none;width:250px;scroll-snap-align:start;grid-template-columns:40px 1fr;background:var(--surface);border-color:var(--line)}
+  .fbtn .ic{width:40px;height:40px}
+  .fbtn p{display:block}
+}
+.showcase{position:sticky;top:90px}
+.showcase .phone{width:min(310px,78vw)}
+.shot{position:absolute;inset:11px;border-radius:34px;overflow:hidden;background:#f7f6fb;opacity:0;transition:opacity .45s ease,transform .45s ease;transform:scale(.985)}
+.shot.on{opacity:1;transform:none}
+.shot img{width:100%;height:100%;object-fit:cover;object-position:top}
+
+/* scanner mock */
+.scan{background:#0b0a14;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:22px;color:#fff;text-align:center}
+.scan .vf{position:relative;width:100%;aspect-ratio:85.6/54;border-radius:16px;background:linear-gradient(135deg,#1e3a8a,#3b2fa8 60%,#6d28d9);overflow:hidden;box-shadow:0 0 0 2px rgba(255,255,255,.08)}
+.scan .vf::before{content:"";position:absolute;inset:-6px;border-radius:20px;padding:3px;background:linear-gradient(#fff,#fff) top left/26px 3px no-repeat,linear-gradient(#fff,#fff) top left/3px 26px no-repeat,linear-gradient(#fff,#fff) top right/26px 3px no-repeat,linear-gradient(#fff,#fff) top right/3px 26px no-repeat,linear-gradient(#fff,#fff) bottom left/26px 3px no-repeat,linear-gradient(#fff,#fff) bottom left/3px 26px no-repeat,linear-gradient(#fff,#fff) bottom right/26px 3px no-repeat,linear-gradient(#fff,#fff) bottom right/3px 26px no-repeat}
+.scan .chip{position:absolute;left:12%;top:30%;width:15%;aspect-ratio:1.3;border-radius:5px;background:linear-gradient(135deg,#f6d27a,#c79a3b)}
+.scan .num{position:absolute;left:12%;bottom:26%;font:600 13px/1 ui-monospace,monospace;letter-spacing:.12em;opacity:.9}
+.scan .nm{position:absolute;left:12%;bottom:12%;font:600 9px/1 ui-monospace,monospace;letter-spacing:.14em;opacity:.75}
+.scan .beam{position:absolute;left:0;right:0;height:38%;top:-40%;background:linear-gradient(transparent,rgba(167,139,250,.55) 85%,#c4b5fd);border-bottom:2px solid #ddd6fe;animation:beam 2.4s ease-in-out infinite}
+@keyframes beam{0%{top:-40%}60%,100%{top:100%}}
+.scan .fields{width:100%;display:grid;gap:8px}
+.scan .fld{display:flex;justify-content:space-between;align-items:center;background:#17152a;border:1px solid #2a2646;border-radius:12px;padding:10px 12px;font-size:12px}
+.scan .fld span{color:#9c96c4;font-weight:600}
+.scan .fld b{font:600 12px ui-monospace,monospace;letter-spacing:.05em;opacity:0;animation:pop 4.8s infinite}
+.scan .fld:nth-child(2) b{animation-delay:.35s}.scan .fld:nth-child(3) b{animation-delay:.7s}.scan .fld:nth-child(4) b{animation-delay:1.05s}
+@keyframes pop{0%,30%{opacity:0;transform:translateY(4px)}38%,92%{opacity:1;transform:none}100%{opacity:0}}
+.scan .hint{font-size:12px;color:#b9b3dd}
+.scan .ok{display:inline-flex;gap:6px;align-items:center;font-size:12px;font-weight:700;color:#86efac}
+
+/* also inside */
+.also{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:44px}
+.mini{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;gap:12px;align-items:flex-start}
+.mini svg{width:20px;height:20px;color:var(--v2);flex:none;margin-top:2px}
+.mini b{display:block;font-size:15px;font-weight:700}
+.mini span{font-size:13.5px;color:var(--muted)}
+
+/* privacy */
+.privacy{background:linear-gradient(135deg,#2a1f7a,#3b2fa8 45%,#5b21b6);color:#fff;border-radius:32px;padding:40px 22px;position:relative;overflow:hidden}
+@media(min-width:720px){.privacy{padding:56px 48px}}
+.privacy::after{content:"";position:absolute;right:-120px;top:-120px;width:420px;height:420px;border-radius:50%;border:56px solid rgba(255,255,255,.05);box-shadow:0 0 0 60px rgba(255,255,255,.03)}
+.privacy .kicker{color:#ffb27f}
+.privacy h2{max-width:20ch}
+.privacy .sub{color:#d8d2ff;max-width:60ch;font-size:17px}
+.pgrid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:30px}
+.p{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:16px;display:flex;gap:12px}
+.p svg{width:22px;height:22px;flex:none;color:#ffb27f}
+.p b{display:block;font-size:15px}
+.p span{font-size:13.5px;color:#d8d2ff}
+
+/* testimonials */
+.wall{columns:1;column-gap:16px}
+@media(min-width:720px){.wall{columns:2}}
+@media(min-width:1080px){.wall{columns:3}}
+.tw{break-inside:avoid;margin:0 0 16px;border-radius:18px;overflow:hidden;background:#000;border:1px solid #2f3336;box-shadow:var(--shadow);transition:transform .2s}
+.tw:hover{transform:translateY(-2px)}
+.tw img{width:100%;height:auto}
+.note{font-size:13px;color:var(--soft);margin-top:6px}
+
+/* closing */
+.end{text-align:center}
+.end .mark{width:84px;height:84px;margin:0 auto 18px;border-radius:24px;box-shadow:0 20px 40px -14px rgba(99,102,241,.8)}
+.end .row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:24px}
+.end .btn{min-width:200px}
+footer{padding:36px 0 48px;text-align:center;color:var(--soft);font-size:14px}
+footer .credit{display:inline-flex;align-items:center;gap:10px;font-weight:600}
+footer .credit img{width:34px;height:34px;border-radius:9px}
+footer .handle{color:var(--v2);font-weight:800;text-decoration:none}
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#">
+      <img src="assets/favicon.svg" alt="">
+      <span><b>Card Vault</b><small>YOUR CARD JOURNEY</small></span>
+    </a>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#love">Testimonials</a>
+      <a class="cta" href="#get">Get the app</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow"><i></i>Live on Google Play &amp; the App Store</span>
+    <h1>Not a card storage app. <em>A card system for CCGeeks.</em></h1>
+    <p class="lede">Every credit, debit and add-on card across your family, organised by whose card it is, searchable in seconds, and locked inside your phone. No internet, no account, no cloud.</p>
+    <div class="stats">
+      <span class="stat"><b>150+</b> CCGeeks onboard</span>
+      <span class="stat"><b>50+</b> testers shaped it</span>
+      <span class="stat"><b>0</b> internet permission</span>
+    </div>
+
+    <div class="stage" id="get">
+      <div class="phone-wrap">
+        <span class="tag t1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Whole family, one vault</span>
+        <span class="tag t2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l20 20M8.5 16.5a5 5 0 0 1 7 0M2 8.82a15 15 0 0 1 4.17-2.65M10.66 5c4.01-.36 8.14.9 11.34 3.76M16.85 11.25a10 10 0 0 1 2.22 1.68M5 13a10 10 0 0 1 5.24-2.76M12 20h.01"/></svg>Works fully offline</span>
+        <div class="phone">
+          <video id="demo" src="assets/demo.mp4" poster="assets/poster.jpg" muted loop playsinline autoplay preload="metadata" aria-label="Card Vault demo video"></video>
+          <button class="play" id="sound" type="button"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><span>Watch the demo</span></button>
+        </div>
+      </div>
+
+      <div class="get">
+        <img src="assets/get-card-vault.png" alt="Card Vault is live: scan the QR code for Google Play or the Apple App Store" width="720" height="900">
+        <div class="links">
+          <a class="btn primary" href="https://play.google.com/store/apps/details?id=com.yourcardjourney.cardvault" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.6 2.2 13.8 12 3.6 21.8c-.37-.2-.6-.6-.6-1.1V3.3c0-.5.23-.9.6-1.1Zm11.3 8.7 2.6-2.6 3.2 1.8c.9.5.9 1.8 0 2.3l-3.2 1.8-2.6-2.6-.6-.6.6-.1Zm-1.1 1.1 2.5 2.5L5 20.9 13.8 12ZM5 3.1l11.3 6.4L13.8 12Z"/></svg>Android</a>
+          <a class="btn" href="https://apple.co/4i124EY" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8s2 .8 3.4.8 2.2-1.3 3.1-2.5c1-1.4 1.4-2.8 1.4-2.9-.1 0-2.7-1-2.7-4.1ZM13.9 5c.7-.9 1.2-2 1-3.2-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.1 1.2.1 2.4-.6 3.1-1.5Z"/></svg>iPhone</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Features</span>
+      <h2>Built around how CCGeeks actually juggle cards</h2>
+      <p>Every feature below came out of feedback from real card enthusiasts managing 10, 20, 30+ cards for themselves and their family.</p>
+    </div>
+
+    <div class="explorer">
+      <div class="flist" id="flist" role="tablist" aria-label="Card Vault features">
+        <button class="fbtn on" role="tab" data-shot="s-rel">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+          <span><h3>Relations: whose card is it?</h3><p>Tag every card Self, Spouse, Dad, Mom and more. Lock the home view to one person and it comes back that way on every unlock.</p><span class="bar"><i></i></span></span>
+        </button>
+        <button class="fbtn" role="tab" data-shot="s-cards">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg></span>
+          <span><h3>Credit, debit and add-ons</h3><p>Cards grouped by bank in their own colours. Add-on cards branch off the primary they belong to, with a nickname and notes on each.</p><span class="bar"><i></i></span></span>
+        </button>
+        <button class="fbtn" role="tab" data-shot="s-scan">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/></svg></span>
+          <span><h3>Scan a card with the camera</h3><p>Number, expiry, CVV and name filled in for you, read on the phone itself. No frame is ever kept, nothing saved until you tap Save.</p><span class="bar"><i></i></span></span>
+        </button>
+        <button class="fbtn" role="tab" data-shot="s-search">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+          <span><h3>Find any card in seconds</h3><p>Search across bank, card name, nickname, holder, notes, network, type, relation and last 4 digits, all in memory.</p><span class="bar"><i></i></span></span>
+        </button>
+        <button class="fbtn" role="tab" data-shot="s-filter">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"/></svg></span>
+          <span><h3>Filter by bank, type or network</h3><p>Slice a big collection down to exactly the cards you want: HDFC only, debit only, Amex only.</p><span class="bar"><i></i></span></span>
+        </button>
+        <button class="fbtn" role="tab" data-shot="s-pp">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></span>
+          <span><h3>Priority Pass, linked to the card</h3><p>Lounge passes in their own tab, grouped by the card and person they came with, with expiry and status at a glance.</p><span class="bar"><i></i></span></span>
+        </button>
+        <button class="fbtn" role="tab" data-shot="s-reveal">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></span>
+          <span><h3>Masked until you tap</h3><p>Number and CVV stay hidden until you reveal them. Copy any field in one tap; the clipboard wipes itself after 45 seconds.</p><span class="bar"><i></i></span></span>
+        </button>
+        <button class="fbtn" role="tab" data-shot="s-add">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+          <span><h3>Add one, or paste twenty</h3><p>Already keep your cards in Excel? Paste them all in one go and the vault is ready in minutes.</p><span class="bar"><i></i></span></span>
+        </button>
+        <button class="fbtn" role="tab" data-shot="s-move">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="13" height="10" rx="2"/><rect x="16" y="8" width="6" height="12" rx="1.5"/><path d="M6 18h6"/></svg></span>
+          <span><h3>Your vault moves with you</h3><p>One encrypted file works on Android, iPhone, Windows and Mac. Export it, carry it over, open it with the same master password.</p><span class="bar"><i></i></span></span>
+        </button>
+      </div>
+
+      <div class="showcase">
+        <div class="phone" aria-live="polite">
+          <div class="screen"></div>
+          <div class="shot on" id="s-rel"><img src="assets/03-relation.webp" alt="Whose cards? picker showing Self, Spouse and Everyone" loading="lazy"></div>
+          <div class="shot" id="s-cards"><img src="assets/01-cards.webp" alt="Cards grouped by bank with primary and type tags" loading="lazy"></div>
+          <div class="shot scan" id="s-scan" aria-label="Card scanner">
+            <span class="hint">Hold the card inside the frame</span>
+            <div class="vf"><span class="chip"></span><span class="num">4111 1111 1111 1111</span><span class="nm">N SHARMA&nbsp;&nbsp;&nbsp;08/29</span><span class="beam"></span></div>
+            <div class="fields">
+              <div class="fld"><span>Card number</span><b>4111 •••• •••• 1111</b></div>
+              <div class="fld"><span>Expiry</span><b>08/29</b></div>
+              <div class="fld"><span>CVV</span><b>•••</b></div>
+              <div class="fld"><span>Name on card</span><b>N SHARMA</b></div>
+            </div>
+            <span class="ok"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>Read on this phone, nothing uploaded</span>
+          </div>
+          <div class="shot" id="s-search"><img src="assets/02-search.webp" alt="Searching hdfc filters the list instantly" loading="lazy"></div>
+          <div class="shot" id="s-filter"><img src="assets/04-filter.webp" alt="Filter sheet by bank and card type" loading="lazy"></div>
+          <div class="shot" id="s-pp"><img src="assets/06-priority-pass.webp" alt="Priority Pass tab grouped by card" loading="lazy"></div>
+          <div class="shot" id="s-reveal"><img src="assets/05-reveal.webp" alt="Revealed card number with copy buttons" loading="lazy"></div>
+          <div class="shot" id="s-add"><img src="assets/08-add.webp" alt="Add card form with Paste many" loading="lazy"></div>
+          <div class="shot" id="s-move"><img src="assets/07-backup.webp" alt="Settings with backup, auto-lock and fingerprint unlock" loading="lazy"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="also">
+      <div class="mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><div><b>Expiry reminders</b><span>A nudge when a card is about to expire.</span></div></div>
+      <div class="mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4M14 13.12c0 2.38 0 6.38-1 8.88M17.29 21.02c.12-.6.43-2.3.5-3.02M2 12a10 10 0 0 1 18-6M2 16h.01M21.8 16c.2-2 .131-5.354 0-6M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2M8.65 22c.21-.66.45-1.32.57-2M9 6.8a6 6 0 0 1 9 5.2v2"/></svg><div><b>Fingerprint unlock</b><span>Optional, released only on a match.</span></div></div>
+      <div class="mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></svg><div><b>Change master password</b><span>Re-sealed with a fresh salt, any time.</span></div></div>
+      <div class="mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg><div><b>Share a card as text</b><span>Card no, CVV, expiry and name in one go.</span></div></div>
+      <div class="mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M14 9h1M9 13h1M14 13h1M9 17h6"/></svg><div><b>Any bank, any card</b><span>30+ Indian bank themes, or type your own.</span></div></div>
+      <div class="mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><div><b>Nicknames &amp; notes</b><span>Context on each card, not just a number.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="privacy">
+  <div class="wrap">
+    <div class="privacy">
+      <span class="kicker">Privacy by design</span>
+      <h2>The app cannot connect to the internet. At all.</h2>
+      <p class="sub">Card Vault ships without internet permission, so the operating system itself stops it from sending anything anywhere. Your cards are encrypted on your device and only you hold the key.</p>
+      <div class="pgrid">
+        <div class="p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l20 20M8.5 16.5a5 5 0 0 1 7 0M2 8.82a15 15 0 0 1 4.17-2.65M10.66 5c4.01-.36 8.14.9 11.34 3.76M12 20h.01"/></svg><div><b>No internet permission</b><span>Enforced by Android and iOS, not by a promise.</span></div></div>
+        <div class="p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><div><b>AES-encrypted vault</b><span>One master password is the only gate.</span></div></div>
+        <div class="p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a10 10 0 1 0 10 10M12 6v6l4 2"/></svg><div><b>Auto-locks</b><span>The moment the app leaves the screen, or on your timer.</span></div></div>
+        <div class="p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68M6.61 6.61A13.53 13.53 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61M2 2l20 20"/></svg><div><b>Blocks screenshots</b><span>And hides cards in the recent-apps preview.</span></div></div>
+        <div class="p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 14l2 2 4-4"/></svg><div><b>Clipboard clears in 45s</b><span>A copied number does not linger.</span></div></div>
+        <div class="p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l20 20M5.78 5.78A7 7 0 0 0 6.5 19H17.5a4.5 4.5 0 0 0 2.36-.67M21.38 15.6A4.5 4.5 0 0 0 17.5 10h-1.79A7 7 0 0 0 9.6 5.08"/></svg><div><b>No cloud backup</b><span>No account, no server, no ads, no tracking.</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="love">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">From the community</span>
+      <h2>What CCGeeks are saying</h2>
+      <p>Straight from X and DMs, unedited. Handles are blurred and profile photos swapped out for privacy.</p>
+    </div>
+    <div class="wall">
+      <figure class="tw"><img src="assets/t/1.png" alt="Used Card Vault to pull RBL card details for a milestone spend. Thanks for the amazing app." loading="lazy"></figure>
+      <figure class="tw"><img src="assets/t/13.png" alt="This is an app every CC Geek must have. Simple and clean interface." loading="lazy"></figure>
+      <figure class="tw"><img src="assets/t/4.png" alt="Purchased the Card Vault app. Simple to use and user friendly." loading="lazy"></figure>
+      <figure class="tw"><img src="assets/t/7.png" alt="App is very useful. It is difficult to carry 15 to 20 cards every time I travel. This app solved my problem." loading="lazy"></figure>
+      <figure class="tw"><img src="assets/t/2.png" alt="Uploaded most of the data using the CSV route, super easy and fast. Will definitely be using it regularly." loading="lazy"></figure>
+      <figure class="tw"><img src="assets/t/11.png" alt="One of the important apps for me in recent times. Loved every bit of it after updating." loading="lazy"></figure>
+      <figure class="tw"><img src="assets/t/12.png" alt="Been trying the app for 2 days. Love it!" loading="lazy"></figure>
+      <figure class="tw"><img src="assets/t/6.png" alt="Run an ad, you are getting lot of positive feedback. Such a nice UI with lot of features." loading="lazy"></figure>
+      <figure class="tw"><img src="assets/t/8.png" alt="The app definitely looks worth the money. I'm also a Bitwarden user." loading="lazy"></figure>
+      <figure class="tw"><img src="assets/t/10.png" alt="Installed the Card Vault app and liked it very much." loading="lazy"></figure>
+      <figure class="tw"><img src="assets/t/9.png" alt="Was trying to make something similar, it's tedious. Will give it a try." loading="lazy"></figure>
+    </div>
+  </div>
+</section>
+
+<section class="end">
+  <div class="wrap">
+    <img class="mark" src="assets/favicon.svg" alt="">
+    <h2>Your cards. Your phone. Nobody else.</h2>
+    <p class="lede" style="margin:0 auto">One purchase, yours to keep. Same app on Android and iPhone.</p>
+    <div class="row">
+      <a class="btn primary" href="https://play.google.com/store/apps/details?id=com.yourcardjourney.cardvault" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.6 2.2 13.8 12 3.6 21.8c-.37-.2-.6-.6-.6-1.1V3.3c0-.5.23-.9.6-1.1Zm11.3 8.7 2.6-2.6 3.2 1.8c.9.5.9 1.8 0 2.3l-3.2 1.8-2.6-2.6-.6-.6.6-.1Zm-1.1 1.1 2.5 2.5L5 20.9 13.8 12ZM5 3.1l11.3 6.4L13.8 12Z"/></svg>Get it on Google Play</a>
+      <a class="btn" href="https://apple.co/4i124EY" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8s2 .8 3.4.8 2.2-1.3 3.1-2.5c1-1.4 1.4-2.8 1.4-2.9-.1 0-2.7-1-2.7-4.1ZM13.9 5c.7-.9 1.2-2 1-3.2-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.1 1.2.1 2.4-.6 3.1-1.5Z"/></svg>Download on the App Store</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span class="credit"><img src="assets/ycj.png" alt="" onerror="this.style.display='none'">Shared by <a class="handle" href="https://x.com/YourCardJourney" target="_blank" rel="noopener">@YourCardJourney</a></span>
+</footer>
+
+<script>
+(() => {
+  // Demo video: starts muted; the pill turns sound on and restarts it.
+  const v = document.getElementById('demo'), b = document.getElementById('sound');
+  b.addEventListener('click', () => {
+    v.muted = false; v.currentTime = 0; v.controls = true; v.play().catch(() => {});
+    b.remove();
+  });
+
+  // Feature explorer: tap a feature to show its screen; cycles on its own until touched.
+  const list = document.getElementById('flist');
+  const btns = [...list.querySelectorAll('.fbtn')];
+  const DUR = 5000;
+  let i = 0, timer = null, auto = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  list.style.setProperty('--dur', DUR + 'ms');
+
+  function show(n, fromUser) {
+    i = n;
+    btns.forEach((x, k) => {
+      const on = k === n;
+      x.classList.toggle('on', on);
+      x.setAttribute('aria-selected', on);
+      document.getElementById(x.dataset.shot).classList.toggle('on', on);
+    });
+    if (fromUser && list.scrollWidth > list.clientWidth) {
+      btns[n].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+    }
+    restart();
+  }
+  function restart() {
+    clearTimeout(timer);
+    btns.forEach(x => x.classList.remove('auto'));
+    if (!auto || !visible) return;
+    void btns[i].offsetWidth;            // replay the progress bar
+    btns[i].classList.add('auto');
+    timer = setTimeout(() => show((i + 1) % btns.length), DUR);
+  }
+  btns.forEach((x, k) => x.addEventListener('click', () => { auto = false; show(k, true); }));
+
+  let visible = false;
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; restart(); }, { threshold: .35 })
+    .observe(document.querySelector('.explorer'));
+  show(0);
+})();
+</script>
+</body>
+</html>
