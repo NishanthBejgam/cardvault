@@ -84,11 +84,19 @@ h2{font-size:clamp(26px,3.4vw,38px);font-weight:800;letter-spacing:-.03em;margin
 
 /* testimonials */
 section{padding:56px 0}
-/* every tile the same size; screenshots keep one text scale (width = source px / 900) */
-.wall{display:grid;grid-template-columns:1fr;gap:18px}
-@media(min-width:820px){.wall{grid-template-columns:1fr 1fr}}
-.tw{aspect-ratio:2.5;display:flex;align-items:center;border-radius:20px;overflow:hidden;background:#000;box-shadow:0 0 0 1px #2f3336,0 20px 40px -24px rgba(0,0,0,.9)}
-.tw img{width:calc(var(--w) / 900 * 100%);height:auto}
+/* every card the same size: equal columns and equal rows */
+.wall{display:grid;grid-template-columns:1fr;grid-auto-rows:1fr;gap:18px}
+@media(min-width:720px){.wall{grid-template-columns:1fr 1fr}}
+@media(min-width:1040px){.wall{grid-template-columns:repeat(3,1fr)}}
+.tw{display:flex;flex-direction:column;gap:18px;padding:26px;border-radius:24px;background:var(--panel);border:1px solid var(--line)}
+.tw blockquote{flex:1;font-size:16.5px;line-height:1.6;color:#e4e0fb}
+.tw blockquote::before{content:"\201C";display:block;font-size:56px;line-height:.6;height:26px;font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tw figcaption{display:flex;align-items:center;gap:12px;padding-top:16px;border-top:1px solid var(--line)}
+.av{position:relative;width:40px;height:40px;border-radius:50%;background:var(--grad);overflow:hidden;flex:none}
+.av::before{content:"";position:absolute;left:30%;top:18%;width:40%;height:40%;border-radius:50%;background:#fff}
+.av::after{content:"";position:absolute;left:16%;top:62%;width:68%;height:70%;border-radius:50%;background:#fff}
+.tw b{display:block;font-weight:800;font-size:15px}
+.tw small{color:var(--muted);font-size:13px;font-weight:600}
 
 footer{padding:24px 0 48px;text-align:center;color:var(--muted);font-weight:700;font-size:14px;display:flex;justify-content:center;align-items:center;gap:10px}
 footer img{width:32px;height:32px;border-radius:9px}
@@ -144,16 +152,15 @@ footer a{color:#c4b5fd;text-decoration:none}
   <section>
     <h2>What CCGeeks say</h2>
     <div class="wall">
-      <figure class="tw"><img style="--w:792" src="assets/t/1.png" alt="Used Card Vault for an RBL milestone spend. Thanks for the amazing app." loading="lazy"></figure>
-      <figure class="tw"><img style="--w:828" src="assets/t/13.png" alt="This is an app every CC Geek must have." loading="lazy"></figure>
-      <figure class="tw"><img style="--w:790" src="assets/t/4.png" alt="Simple to use and user friendly." loading="lazy"></figure>
-      <figure class="tw"><img style="--w:741" src="assets/t/7.png" alt="Difficult to carry 15 to 20 cards when I travel. This app solved my problem." loading="lazy"></figure>
-      <figure class="tw"><img style="--w:897" src="assets/t/2.png" alt="Uploaded most of the data with CSV, super easy and fast." loading="lazy"></figure>
-      <figure class="tw"><img style="--w:739" src="assets/t/11.png" alt="One of the important apps for me in recent times." loading="lazy"></figure>
-      <figure class="tw"><img style="--w:873" src="assets/t/12.png" alt="Been trying the app for 2 days. Love it!" loading="lazy"></figure>
-      <figure class="tw"><img style="--w:876" src="assets/t/6.png" alt="Such a nice UI with lot of features." loading="lazy"></figure>
-      <figure class="tw"><img style="--w:727" src="assets/t/8.png" alt="The app definitely looks worth the money." loading="lazy"></figure>
-      <figure class="tw"><img style="--w:703" src="assets/t/10.png" alt="Installed Card Vault and liked it very much." loading="lazy"></figure>
+      <figure class="tw"><blockquote>My mobile charge was 1% and I needed to complete my RBL card milestone spend. I recalled this app, got my details from the vault and did the payment. Thanks for the amazing app.</blockquote><figcaption><span class="av"></span><span><b>Kolluru Akhil Teja</b><small>on X</small></span></figcaption></figure>
+      <figure class="tw"><blockquote>This is an app every CC Geek must have! I've tried so many apps before, but this one really hits different. Simple and clean, with no unnecessary options.</blockquote><figcaption><span class="av"></span><span><b>Kushal Gupta</b><small>on X</small></span></figcaption></figure>
+      <figure class="tw"><blockquote>It is difficult to carry 15 to 20 cards every time I travel and need these details. I had been searching for an app like this for very long. This app solved my problem.</blockquote><figcaption><span class="av"></span><span><b>Vivek Kumar Singh</b><small>on X</small></span></figcaption></figure>
+      <figure class="tw"><blockquote>I uploaded the majority of my data using the CSV route, and that was super easy and fast. I will definitely be using it regularly.</blockquote><figcaption><span class="av"></span><span><b>Deepak Kamath</b><small>on X</small></span></figcaption></figure>
+      <figure class="tw"><blockquote>The first impression is that the app is simple to use and user friendly! No need for any other scan apps to store card images now. Kudos!</blockquote><figcaption><span class="av"></span><span><b>Shiv Kumar</b><small>on X</small></span></figcaption></figure>
+      <figure class="tw"><blockquote>One of the important apps for me in recent times. Loved every bit of it after updating ❤️</blockquote><figcaption><span class="av"></span><span><b>Sai Santosh</b><small>on X</small></span></figcaption></figure>
+      <figure class="tw"><blockquote>You are getting a lot of positive feedback and it surely deserves that. Such a nice UI with a lot of features.</blockquote><figcaption><span class="av"></span><span><b>Bigul Chugh</b><small>on X</small></span></figcaption></figure>
+      <figure class="tw"><blockquote>The app definitely looks worth the money. I'm also a Bitwarden user.</blockquote><figcaption><span class="av"></span><span><b>Lord Gane</b><small>on X</small></span></figcaption></figure>
+      <figure class="tw"><blockquote>Bro, I have installed the Card Vault app and liked it very much 🙏</blockquote><figcaption><span class="av"></span><span><b>Movva Harish</b><small>via DM</small></span></figcaption></figure>
     </div>
   </section>
 
