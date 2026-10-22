@@ -63,17 +63,24 @@ img,video{display:block;max-width:100%}
 .big{position:relative;z-index:1}
 .big .n{font-size:clamp(64px,9vw,112px);font-weight:800;line-height:.9;letter-spacing:-.05em}
 .big .l{font-size:clamp(16px,1.7vw,20px);font-weight:700;color:#e6e0ff;margin-top:8px}
-.qrs{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:auto;padding-top:24px}
-.qr{background:#fff;color:#17142b;border-radius:22px;padding:clamp(12px,1.6vw,18px);text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:12px;transition:transform .15s}
-.qr:hover{transform:translateY(-2px)}
-.qr img{width:100%;max-width:240px;aspect-ratio:1;image-rendering:pixelated}
-.qr span{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px}
-.qr svg{width:20px;height:20px}
-/* laptop: QR size follows the panel height so both codes and labels always fit */
+/* one row per store: QR on the left to scan, install button on the right to tap */
+.qrs{position:relative;z-index:1;display:grid;gap:14px;margin-top:auto;padding-top:24px}
+.qr{position:relative;background:#fff;color:#17142b;border-radius:22px;padding:14px;display:flex;align-items:center;gap:clamp(14px,2vw,24px);min-height:0}
+.qr>img{flex:none;height:clamp(96px,22vw,132px);aspect-ratio:1;image-rendering:pixelated}
+.qr .go{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.qr .store{display:flex;align-items:center;gap:8px;font-weight:800;font-size:clamp(16px,1.6vw,19px)}
+.qr .store svg{width:22px;height:22px}
+.install{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:#fff;background:#17142b;font-weight:800;font-size:clamp(14px,1.3vw,16px);padding:13px 20px;border-radius:14px;transition:transform .15s,background .15s;white-space:nowrap}
+.install:hover{transform:translateY(-1px);background:#2e2654}
+.install svg{width:18px;height:18px}
+.qr .hint{font-size:12.5px;font-weight:600;color:#6b6688}
+.qr .mine{position:absolute;top:12px;right:12px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7c3aed;background:#f1eeff;padding:5px 9px;border-radius:999px}
+.qr .mine[hidden]{display:none}
+@media(max-width:899px){.qr>img{display:none}.qr{padding:16px 18px}.qr .hint{display:none}}
+/* laptop: rows share the panel height so both always fit beside the video */
 @media(min-width:900px){
-  .qrs{flex:1;min-height:0}
-  .qr{justify-content:center;min-height:0}
-  .qr img{width:auto;height:clamp(120px,calc(var(--hero-h) - 350px),250px)}
+  .qrs{flex:1;min-height:0;grid-template-rows:1fr 1fr}
+  .qr>img{height:min(100%,200px)}
 }
 
 /* features */
@@ -135,14 +142,24 @@ footer a{color:#c4b5fd;text-decoration:none}
     <div class="stores">
       <div class="big"><div class="n">150+</div><div class="l">CCGeeks on Android &amp; iPhone</div></div>
       <div class="qrs">
-        <a class="qr" href="https://play.google.com/store/apps/details?id=com.yourcardjourney.cardvault" target="_blank" rel="noopener">
+        <div class="qr" data-os="android">
           <img src="assets/qr-android.svg" alt="QR code for Google Play">
-          <span><svg viewBox="0 0 24 24"><path fill="#34a853" d="M3.6 2.2 13.8 12 3.6 21.8c-.4-.2-.6-.6-.6-1.1V3.3c0-.5.2-.9.6-1.1Z"/><path fill="#fbbc04" d="m17.5 8.3 3.2 1.8c.9.5.9 1.8 0 2.3l-3.2 1.8-3.7-2.2Z"/><path fill="#4285f4" d="M13.8 12 3.6 2.2 17.5 8.3Z"/><path fill="#ea4335" d="M13.8 12 17.5 15.7 3.6 21.8Z"/></svg>Google Play</span>
-        </a>
-        <a class="qr" href="https://apple.co/4i124EY" target="_blank" rel="noopener">
+          <div class="go">
+            <span class="store"><svg viewBox="0 0 24 24"><path fill="#34a853" d="M3.6 2.2 13.8 12 3.6 21.8c-.4-.2-.6-.6-.6-1.1V3.3c0-.5.2-.9.6-1.1Z"/><path fill="#fbbc04" d="m17.5 8.3 3.2 1.8c.9.5.9 1.8 0 2.3l-3.2 1.8-3.7-2.2Z"/><path fill="#4285f4" d="M13.8 12 3.6 2.2 17.5 8.3Z"/><path fill="#ea4335" d="M13.8 12 17.5 15.7 3.6 21.8Z"/></svg>Android</span>
+            <a class="install" href="https://play.google.com/store/apps/details?id=com.yourcardjourney.cardvault" target="_blank" rel="noopener">Install from Google Play <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <span class="hint">Scan the code, or tap to open the store</span>
+          </div>
+          <span class="mine" hidden>Your phone</span>
+        </div>
+        <div class="qr" data-os="ios">
           <img src="assets/qr-ios.svg" alt="QR code for the App Store">
-          <span><svg viewBox="0 0 24 24" fill="#17142b"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8s2 .8 3.4.8 2.2-1.3 3.1-2.5c1-1.4 1.4-2.8 1.4-2.9-.1 0-2.7-1-2.7-4.1ZM13.9 5c.7-.9 1.2-2 1-3.2-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.1 1.2.1 2.4-.6 3.1-1.5Z"/></svg>App Store</span>
-        </a>
+          <div class="go">
+            <span class="store"><svg viewBox="0 0 24 24" fill="#17142b"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8s2 .8 3.4.8 2.2-1.3 3.1-2.5c1-1.4 1.4-2.8 1.4-2.9-.1 0-2.7-1-2.7-4.1ZM13.9 5c.7-.9 1.2-2 1-3.2-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.1 1.2.1 2.4-.6 3.1-1.5Z"/></svg>iPhone</span>
+            <a class="install" href="https://apple.co/4i124EY" target="_blank" rel="noopener">Download on the App Store <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <span class="hint">Scan the code, or tap to open the store</span>
+          </div>
+          <span class="mine" hidden>Your phone</span>
+        </div>
       </div>
     </div>
   </div>
@@ -199,6 +216,10 @@ b.addEventListener('click', () => {
   v.muted = false; v.currentTime = 0; v.controls = true; v.play().catch(() => {});
   b.remove();
 });
+// Mark the store that matches the visitor's phone.
+const os = /android/i.test(navigator.userAgent) ? 'android'
+  : /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ? 'ios' : null;
+if (os) document.querySelector(`.qr[data-os="${os}"] .mine`).hidden = false;
 </script>
 </body>
 </html>
