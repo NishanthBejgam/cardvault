@@ -7,7 +7,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "tools", "og.html")
-OUT = os.path.join(ROOT, "assets", "og-card.jpg")
+OUT = os.path.join(ROOT, "assets", "og-card-300.jpg")
 
 with sync_playwright() as p:
     b = p.chromium.launch()
