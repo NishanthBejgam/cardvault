@@ -273,6 +273,15 @@ b.addEventListener('click', () => {
 
 // Comparison. Cell: 1 = yes, 0 = no, "text" = partly, "1:text" / "0:text" = yes / no with a note
 const VS = {
+  'New in 2.0': [
+    ['Tap card to phone to add it (NFC)', '1:Android', 0, 0],
+    ['Camera scan in a second or two', '1:Offline', 0, 'Some apps'],
+    ['Scan fills network & variant too', 1, 0, 0],
+    ['Vertical cards scan too', 1, 0, 'Some apps'],
+    ['Scan the Priority Pass number', 1, 0, 0],
+    ['Virtual & Dual card tags', 1, 0, 0],
+    ['Own icon for every Indian bank', 1, 0, 'Website logos'],
+  ],
   'What it is': [
     ['Built only for credit / debit cards', 1, 0, '0:Side feature'],
     ['One place for every card you own', 1, 'Messy list', 'Mixed with passwords'],
@@ -286,6 +295,8 @@ const VS = {
     ['Add-on card linked to its primary', 1, 0, 0],
     ['Primary → add-on hierarchy at a glance', 1, 0, 0],
     ['Grouped by bank, in bank colours', 1, 0, 0],
+    ['Relations map of every card', 1, 0, 0],
+    ['Priority Pass linked to its card', 1, 'Type it yourself', 0],
     ['Filter by bank / network / member', 1, 0, 'Basic folders'],
     ['Card network shown (Visa, RuPay, Amex…)', 1, 'Type it yourself', 'Partly'],
     ['Card variant name (Infinia, Magnus…)', 1, 'Type it yourself', 0],
@@ -298,7 +309,6 @@ const VS = {
   'Speed': [
     ['2-second grab: number, expiry, CVV', 1, 'Scroll + select', 'Several taps'],
     ['One-tap copy of each field', 1, 0, 1],
-    ['Scan a card with the camera', '1:Offline', 0, 'Some apps'],
     ['Import cards in bulk', 1, 0, 'CSV import'],
     ['Browser autofill at checkout', 0, 0, '1:Main strength'],
   ],
@@ -358,7 +368,7 @@ const VS = {
   };
   tabs.innerHTML = Object.keys(VS).map(k => `<button type="button" role="tab">${k}</button>`).join('');
   tabs.addEventListener('click', e => { if (e.target.matches('button')) show(e.target.textContent); });
-  show('What it is');
+  show('New in 2.0');
 
   new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { vs.classList.add('seen'); o.disconnect(); } }, {threshold: .3}).observe(vs);
 })();
