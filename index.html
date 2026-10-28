@@ -74,7 +74,7 @@ img,video{display:block;max-width:100%}
 .stores{display:flex;flex-direction:column;border-radius:32px;background:var(--grad);padding:clamp(20px,3vw,36px);position:relative;overflow:hidden}
 .stores::after{content:"";position:absolute;right:-90px;top:-90px;width:300px;height:300px;border-radius:50%;border:44px solid rgba(255,255,255,.07)}
 .big{position:relative;z-index:1}
-.big .n{font-size:clamp(64px,9vw,112px);font-weight:800;line-height:.9;letter-spacing:-.05em}
+.big .n{font-size:clamp(64px,9vw,112px);font-weight:800;font-variant-numeric:tabular-nums;line-height:.9;letter-spacing:-.05em}
 .big .l{font-size:clamp(16px,1.7vw,20px);font-weight:700;color:#e6e0ff;margin-top:8px}
 .qrs{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:auto;padding-top:24px}
 .qr{background:#fff;color:#17142b;border-radius:22px;padding:clamp(12px,1.6vw,18px);text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:12px;transition:transform .15s}
@@ -189,7 +189,7 @@ footer a{color:#c4b5fd;text-decoration:none}
     </div>
 
     <div class="stores">
-      <div class="big"><div class="n">300+</div><div class="l">CreditCard users on Android &amp; iPhone</div></div>
+      <div class="big"><div class="n" id="users" data-to="300">300+</div><div class="l">CreditCard users on Android &amp; iPhone</div></div>
       <div class="qrs">
         <a class="qr" href="https://play.google.com/store/apps/details?id=com.yourcardjourney.cardvault" target="_blank" rel="noopener">
           <img src="assets/qr-android.svg" alt="QR code for Google Play">
@@ -371,6 +371,22 @@ const VS = {
   show('New in 2.0');
 
   new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { vs.classList.add('seen'); o.disconnect(); } }, {threshold: .3}).observe(vs);
+})();
+// count the users stat up from 0 when the page opens
+(() => {
+  const n = document.getElementById('users'), to = +n.dataset.to, dur = 1400;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  n.textContent = '0+';
+  const run = () => {
+    const t0 = performance.now();
+    const tick = t => {
+      const p = Math.min((t - t0) / dur, 1);
+      n.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))) + '+';
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+  new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { run(); o.disconnect(); } }, {threshold: .4}).observe(n);
 })();
 </script>
 </body>
