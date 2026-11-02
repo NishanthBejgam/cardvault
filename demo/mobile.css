@@ -1,0 +1,965 @@
+/*
+ * mobile.css - the phone layer over the desktop stylesheet.
+ *
+ * style.css is shipped UNCHANGED from the desktop build. That is a deliberate
+ * constraint: the moment the two diverge, a fix made on one platform stops
+ * arriving on the other, and this suite already carries three product lines.
+ * Everything a phone needs is an override here, so a desktop CSS change can be
+ * copied across without a merge.
+ *
+ * Four things actually needed fixing, and nothing else did - the desktop app
+ * was already a bottom-sheet, single-column-capable Material 3 layout:
+ *
+ *   1. Safe areas. The header runs under the notch; the list runs under the
+ *      gesture bar. Both need their padding back.
+ *   2. The top bar had six controls plus two labelled buttons. On a 360px
+ *      screen that is a scrollbar, not a header. Add and Import move to a
+ *      bottom action bar, where a thumb actually reaches them.
+ *   3. Touch targets. 20px icon buttons are a desktop mouse size.
+ *   4. The card number must not offer the system selection toolbar - "share"
+ *      and "web search" over a PAN are not options this app should present.
+ */
+
+/* --- 1. safe areas ------------------------------------------------------- */
+/* env() is zero on a device without insets, so these are unconditional. */
+.topbar-inner {
+  padding-top: calc(12px + env(safe-area-inset-top));
+  padding-left: calc(16px + env(safe-area-inset-left));
+  padding-right: calc(16px + env(safe-area-inset-right));
+}
+.tabs,
+.bankbar-scroll,
+.content {
+  padding-left: calc(16px + env(safe-area-inset-left));
+  padding-right: calc(16px + env(safe-area-inset-right));
+}
+/* Nothing is docked over the list any more, so this is just the gesture bar
+   plus a little air at the end of the scroll. */
+.content { padding-bottom: calc(32px + env(safe-area-inset-bottom)); }
+
+.lock-screen {
+  padding: calc(24px + env(safe-area-inset-top)) 20px
+           calc(24px + env(safe-area-inset-bottom));
+}
+.sheet {
+  padding-bottom: env(safe-area-inset-bottom);
+  max-height: 88vh;                 /* leaves the header visible behind a sheet */
+}
+
+/* --- 2. a header that fits, and a reachable action bar ------------------- */
+@media (max-width: 720px) {
+  .topbar-inner { padding-bottom: 8px; gap: 8px; }
+  .brand-tag { display: none; }     /* "YOUR PRIVATE" is a desktop luxury */
+  .brand-name { font-size: 17px; }
+  .topbar-actions { gap: 2px; margin-left: auto; }
+
+  /* Import leaves the header entirely - it is now offered inside the
+     Add-card sheet, at the moment it is actually relevant. Add card stays,
+     as an icon-only button: there is room since the Network dropdown moved
+     into the filter sheet, and it is the one write action worth a permanent
+     control.
+
+     An earlier version docked both to a fixed bar at the bottom of the
+     screen. That was wrong: a vault is read-heavy, and ~70px of every screen
+     spent on actions used once a week is 8% of the viewport on the axis that
+     is already scarcest. */
+  #importBtn { display: none; }
+  #addBtn { padding: 0; width: 44px; min-width: 44px; }
+  #addBtn span { display: none; }
+
+  /* The desktop's Network dropdown trigger also lives in the header. The
+     filter bar below now owns that control, and two of them - one showing a
+     selection the other does not - is worse than either alone. */
+  #netToggleSlot { display: none; }
+
+  /* 1.3.6: the home screen is exactly two rows - the app mark with every
+     action beside it, then Cards / Relations / Priority Pass / relation /
+     lock - and the rest of the screen is cards. The wordmark is gone on every
+     phone (on a wide iPhone it used to show and push the icons onto a second
+     line), and the row never wraps. The five icon actions sit in one soft
+     violet capsule - no border, no line - and Add stands beside it (closed-
+     test feedback "the top bar has no visible boundary"; picked by the user
+     as option A after a bordered pill and a divider line were rejected). */
+  .brand-text { display: none; }
+  .topbar-inner { flex-wrap: nowrap; }
+  .topbar-actions { flex: none; gap: 6px; }
+  .act-group {
+    display: flex; align-items: center; gap: 1px; padding: 2px;
+    border-radius: 999px; background: color-mix(in srgb, #7c3aed 10%, transparent);
+  }
+  html[data-theme="dark"] .act-group { background: rgba(167,139,250,.12); }
+  .topbar-actions .icon-btn { min-width: 40px; min-height: 40px; width: 40px; height: 40px; border-radius: 50%; }
+  #addBtn { width: 40px; min-width: 40px; height: 40px; min-height: 40px; border-radius: 50%; }
+
+}
+
+/* Desktop layout: the capsule wrapper is invisible. */
+@media (min-width: 721px) { .act-group { display: contents; } }
+
+/* --- 3. touch targets ---------------------------------------------------- */
+/* 44px is the smallest target that does not generate mis-taps in practice.
+   The visual size of the icon is unchanged; only the hit area grows. */
+.icon-btn { min-width: 44px; min-height: 44px; }
+.tile-menu-btn { min-width: 40px; min-height: 40px; }
+.bank-chip, .net-chip, .var-chip { min-height: 38px; }
+.tab { min-height: 44px; }
+.btn { min-height: 44px; }
+
+/* iOS zooms the page when a focused input's font is under 16px. Android does
+   not, but the rule is harmless there and keeps the two builds identical. */
+.field input, .field select, .field textarea, .act-code { font-size: 16px; }
+
+/* --- 4. sensitive values ------------------------------------------------- */
+/* Applied narrowly. A blanket user-select:none would also stop the user
+   selecting a note or a cardholder name, which they legitimately want. */
+.tile-number, .sensitive, .no-select {
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;      /* suppresses the long-press callout */
+}
+
+/* One card per row below 420px: two columns of a 300px-min grid does not fit,
+   and a squeezed tile hides the last digits of the number. */
+@media (max-width: 420px) {
+  .card-grid { grid-template-columns: 1fr; }
+}
+
+/* --- the vault (backup & transfer) sheet --------------------------------- */
+.vault-block { padding: 16px 0; border-bottom: 1px solid var(--m3-outline-var); }
+.vault-block:last-of-type { border-bottom: 0; }
+.vault-h {
+  margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--m3-primary);
+}
+.vault-note { margin: 0 0 12px; font-size: 13.5px; line-height: 1.6; color: var(--m3-on-surface-var); }
+.vault-check {
+  display: flex; align-items: center; gap: 10px; margin: 4px 0 14px;
+  font-size: 13.5px; color: var(--m3-on-surface-var); min-height: 44px;
+}
+.vault-check input { width: 20px; height: 20px; accent-color: var(--m3-primary); }
+/* A sub-option of the check above it (1.3.8 auto-unlock): indented under it. */
+.vault-check.vault-sub { margin: -10px 0 14px 30px; }
+.vault-check[hidden] { display: none; }
+
+/* --- things a phone build simply does not have --------------------------- */
+/* The relationship graph's full-screen control uses the Fullscreen API, which
+   is unreliable inside a WebView and pointless on a screen that is already
+   full. Hidden rather than removed, so the desktop markup stays copyable. */
+@media (max-width: 720px) { #relFull { display: none; } }
+
+/* --- 5. the filter bar, and why the desktop selector could not stay -------
+ *
+ * The desktop bank selector is a wrapping wall of chips. At 1120px it reads as
+ * a tidy row or two. On a 393px screen with 16 banks it was NINE rows: the
+ * entire first screen was chips, every card sat below the fold, and opening
+ * the network filter pushed the list down again so the first card could not be
+ * reached at all.
+ *
+ * What replaces it is two pills that summarise the current selection and open
+ * a bottom sheet. The chips are the same chips - #bankbar is moved into the
+ * sheet by setupMobileFilters() - so there is no second implementation to keep
+ * in step. This is the one place the phone build deliberately diverges from
+ * the desktop layout, and it is worth it: the cards are the product, and they
+ * were not on screen.
+ */
+@media (max-width: 720px) {
+
+  /* Sticky under the tabs, above the list. ~52px total. */
+  .mfilter-bar {
+    position: sticky; z-index: 20;
+    top: var(--topbar-h, 96px);
+    display: flex; gap: 8px;
+    padding: 8px calc(16px + env(safe-area-inset-left))
+             8px calc(16px + env(safe-area-inset-right));
+    background: color-mix(in srgb, var(--m3-surface-1) 92%, var(--m3-primary) 5%);
+    backdrop-filter: saturate(1.35) blur(12px);
+    border-bottom: 1px solid color-mix(in srgb, var(--m3-primary) 14%, var(--m3-outline-var));
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .mfilter-bar::-webkit-scrollbar { display: none; }
+
+  .mfilter-pill {
+    flex: 0 0 auto;
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 40px; padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--m3-outline-var);
+    background: var(--m3-surface-1);
+    color: var(--m3-on-surface);
+    font: 600 14px/1 inherit;
+    cursor: pointer;
+  }
+  /* A set filter has to be obvious at a glance - it is the reason the list is
+     short, and a user who cannot see that it is on will think cards are lost. */
+  .mfilter-pill.is-set {
+    background: var(--m3-primary-container);
+    border-color: color-mix(in srgb, var(--m3-primary) 38%, transparent);
+    color: var(--m3-primary);
+  }
+
+  .mfp-glyph {
+    display: grid; place-items: center;
+    width: 24px; height: 24px; border-radius: 7px;
+    font-size: 11px; font-weight: 800; letter-spacing: -.02em;
+    background: var(--m3-surface-3); color: var(--m3-on-surface-var);
+  }
+  .mfp-all { font-size: 13px; }
+  .mfp-text { white-space: nowrap; }
+  .mfp-count {
+    min-width: 20px; padding: 2px 6px; border-radius: 999px;
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    font-size: 12px; font-weight: 700; text-align: center;
+  }
+  .mfp-caret { opacity: .55; margin-left: -2px; }
+  /* 22px is under the 44px target rule on purpose: this sits INSIDE another
+     button, and a full-size hit area here would swallow taps meant to open the
+     sheet. The padding gives it a real target without covering the pill. */
+  .mfp-clear {
+    display: grid; place-items: center;
+    width: 22px; height: 22px; margin: -4px -4px -4px 0;
+    border-radius: 999px; font-size: 17px; line-height: 1;
+    background: color-mix(in srgb, currentColor 14%, transparent);
+  }
+
+  /* --- inside the sheet -------------------------------------------------- */
+  /* The bank bar loses its sticky/blur chrome once it is in a sheet - it is
+     not stuck to anything any more, and the blur over a solid sheet just
+     muddies the chips. */
+  #filterSheetBody .bankbar {
+    position: static; background: none; backdrop-filter: none;
+    border: 0; padding: 0; box-shadow: none;
+  }
+  #filterSheetBody .bankbar-scroll {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; padding: 0; overflow: visible;
+  }
+  #filterSheetBody .bank-chip {
+    width: 100%; justify-content: flex-start;
+    min-height: 48px;              /* a comfortable list row, not a chip */
+  }
+  #filterSheetBody .bank-chip .count { margin-left: auto; }
+
+  #filterSheetBody .netfilter { position: static; padding: 16px 0 0; border: 0; }
+  #filterSheetBody .net-panel { gap: 12px; }
+  /* The network and variant rows scroll horizontally on the desktop. In a
+     sheet they have the width to wrap instead, which is easier to tap through
+     than a hidden horizontal scroll - the thing that made the desktop filter
+     unusable here in the first place. */
+  #filterSheetBody .netbar-scroll {
+    flex-wrap: wrap; overflow: visible; padding: 0;
+  }
+  #filterSheetBody .filter-label { width: 100%; margin-bottom: 2px; }
+
+  .sheet-body { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+}
+
+/* "Paste many" in the Add-card sheet header. Sits left of the close button,
+   quiet enough not to compete with the form it introduces. */
+.sheet-head .sheet-alt {
+  margin-left: auto; margin-right: 4px;
+  min-height: 40px; padding: 8px 12px; font-size: 14px;
+}
+
+/* --- master password strength meter --------------------------------------
+ * Shown only while CHOOSING a password. The app previously accepted four
+ * characters, which made the 390,000-round key derivation beside the point:
+ * a four-digit password is 10,000 guesses against an extracted vault file.
+ * The meter exists to make length feel worth having, not to gamify it.
+ */
+.pw-strength { margin: -6px 0 14px; }
+.pw-bars { display: flex; gap: 4px; }
+.pw-seg {
+  flex: 1; height: 4px; border-radius: 999px;
+  background: var(--m3-outline-var);
+  transition: background .2s ease;
+}
+.pw-meta {
+  display: flex; gap: 8px; align-items: baseline;
+  margin-top: 7px; font-size: 12.5px; text-align: left;
+}
+.pw-label { font-weight: 700; }
+.pw-hint { color: var(--m3-on-surface-var); font-size: 12px; }
+
+/* Red through amber to green. Score 0 is "too common" - it stays red however
+   long the password is, because length does not save a dictionary word. */
+.pw-strength[data-score="0"] .pw-seg.is-on,
+.pw-strength[data-score="1"] .pw-seg.is-on { background: #d9414f; }
+.pw-strength[data-score="2"] .pw-seg.is-on { background: #e8883a; }
+.pw-strength[data-score="3"] .pw-seg.is-on { background: #d9b23a; }
+.pw-strength[data-score="4"] .pw-seg.is-on,
+.pw-strength[data-score="5"] .pw-seg.is-on { background: #2e9e64; }
+.pw-strength[data-score="0"] .pw-label,
+.pw-strength[data-score="1"] .pw-label { color: #d9414f; }
+.pw-strength[data-score="4"] .pw-label,
+.pw-strength[data-score="5"] .pw-label { color: #2e9e64; }
+
+/* The unlock button doubles as the lockout countdown. */
+#lockBtn:disabled { opacity: .6; }
+
+/* Fingerprint unlock button on the lock screen. Tonal, not filled: the
+   password field remains the primary path, and this is the shortcut. */
+.lock-bio { margin-top: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; }
+.modal-title { margin: 0 0 4px; font-size: 17px; }
+
+/* Auto-lock choices - a segmented list rather than a dropdown, so the current
+   setting is readable without opening anything. */
+.lock-choices { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.lock-choice {
+  flex: 1 1 auto; min-height: 42px; padding: 9px 14px;
+  border-radius: 999px; border: 1px solid var(--m3-outline-var);
+  background: var(--m3-surface-1); color: var(--m3-on-surface);
+  font: 600 13.5px/1 inherit; cursor: pointer;
+}
+.lock-choice.is-on {
+  background: var(--m3-primary-container);
+  border-color: color-mix(in srgb, var(--m3-primary) 38%, transparent);
+  color: var(--m3-primary);
+}
+
+/* =========================================================================
+   1.3.0 - search, relation filter, card type, nickname, Priority Pass
+   Everything below is additive. It is here rather than in style.css so the
+   desktop stylesheet stays byte-identical to the Windows/Mac build.
+   ========================================================================= */
+
+/* --- search in the header ------------------------------------------------ */
+/* Tapping the magnifier swaps the header's contents for the field, so search
+   costs nothing until it is used. Closing it clears the query. */
+.topbar-search {
+  display: flex; align-items: center; gap: 6px;
+  max-width: 1120px; margin: 0 auto; width: 100%;
+  padding: 0 4px;
+}
+.topbar-search input {
+  flex: 1; min-width: 0; border: 0; outline: 0; background: transparent;
+  font: 600 17px/1.3 inherit; color: var(--m3-on-surface); padding: 12px 2px;
+  -webkit-appearance: none; appearance: none;
+}
+.topbar-search input::-webkit-search-cancel-button { display: none; }
+.topbar-search input::placeholder { color: var(--m3-outline); font-weight: 500; }
+.topbar-inner.is-searching > .brand,
+.topbar-inner.is-searching > .topbar-actions { display: none; }
+
+/* --- relation control, in the tabs row ----------------------------------- */
+.tabs { align-items: center; }
+.tabs-right { margin-left: auto; display: flex; align-items: center; gap: 2px; flex: 0 0 auto; }
+.rel-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 34px; max-width: 150px; padding: 4px 8px 4px 6px; border-radius: 999px;
+  border: 1px solid var(--m3-outline-var); background: var(--m3-surface-1);
+  color: var(--m3-on-surface); font: 700 13px/1 inherit; cursor: pointer;
+}
+.rel-pill.is-set {
+  background: var(--m3-primary-container);
+  border-color: color-mix(in srgb, var(--m3-primary) 38%, transparent);
+  color: var(--m3-primary);
+}
+.rel-pill-ico {
+  display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+  background: color-mix(in srgb, currentColor 14%, transparent); flex: 0 0 auto;
+}
+.rel-pill-ico svg { width: 13px; height: 13px; }
+.rel-pill-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rel-pill .mfp-count, .rel-opt .count {
+  min-width: 18px; padding: 2px 5px; border-radius: 999px; flex: 0 0 auto;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  font-size: 11.5px; font-weight: 700; text-align: center;
+}
+.rel-pill .mfp-caret { opacity: .55; margin-left: -2px; flex: 0 0 auto; }
+.rel-lock { flex: 0 0 auto; width: 36px; height: 36px; min-width: 36px; min-height: 36px; }
+.rel-lock .ic-locked { display: none; }
+.rel-lock.is-locked { background: var(--m3-primary); color: var(--m3-on-primary); }
+.rel-lock.is-locked .ic-locked { display: block; }
+.rel-lock.is-locked .ic-unlocked { display: none; }
+
+/* --- tabs that fit one line ---------------------------------------------- */
+/* "My Cards / Relationships / Priority Pass" wrapped to two rows on a 393px
+   screen. Shorter labels, a smaller face, and Priority Pass as its own icon. */
+.tabs .tab { font-size: 13.5px; padding-left: 10px; padding-right: 10px; letter-spacing: -.1px; }
+.tab-icon { display: grid; place-items: center; width: 44px; padding: 0 !important; }
+.tab-icon svg { display: block; }
+@media (max-width: 380px) {
+  .tabs .tab { font-size: 12.5px; padding-left: 7px; padding-right: 7px; }
+  .rel-pill { max-width: 112px; font-size: 12px; }
+}
+
+/* --- relation picker sheet ------------------------------------------------ */
+.rel-list { display: grid; gap: 6px; padding-top: 6px; }
+.rel-opt {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  min-height: 52px; padding: 8px 12px; border-radius: 14px;
+  border: 1px solid var(--m3-outline-var); background: var(--m3-surface-2);
+  color: var(--m3-on-surface); font: 600 15px/1.2 inherit; text-align: left;
+}
+.rel-opt.is-on {
+  background: var(--m3-primary-container); color: var(--m3-primary);
+  border-color: color-mix(in srgb, var(--m3-primary) 38%, transparent);
+}
+.rel-opt-ico {
+  display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px;
+  background: color-mix(in srgb, currentColor 12%, transparent); font-size: 14px;
+}
+.rel-opt-ico svg { width: 16px; height: 16px; }
+.rel-opt-text { flex: 1; }
+.rel-opt-tick { flex: 0 0 auto; }
+
+/* --- relations in Settings ------------------------------------------------- */
+.rel-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.rel-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 36px; padding: 4px 6px 4px 12px; border-radius: 999px;
+  border: 1px solid var(--m3-outline-var); background: var(--m3-surface-2);
+  color: var(--m3-on-surface); font: 600 13.5px/1 inherit;
+}
+.rel-chip.is-fixed { padding-right: 12px; background: var(--m3-primary-container); color: var(--m3-primary); border-color: transparent; }
+.rel-chip .count {
+  min-width: 18px; padding: 2px 6px; border-radius: 999px; text-align: center;
+  font-size: 11.5px; font-weight: 700;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+.rel-chip-x {
+  display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+  border: 0; background: color-mix(in srgb, currentColor 10%, transparent);
+  color: inherit; font-size: 17px; line-height: 1;
+}
+.rel-add { display: flex; gap: 8px; }
+.rel-add input {
+  flex: 1; min-width: 0; min-height: 44px; padding: 0 14px; border-radius: 12px;
+  border: 1px solid var(--m3-outline-var); background: var(--m3-surface-1);
+  color: var(--m3-on-surface); font: 500 16px/1 inherit; outline: 0;
+}
+.rel-add input:focus { border-color: var(--m3-primary); }
+.rel-add .btn { flex: 0 0 auto; }
+
+/* --- segmented control (card type in the form, pass status) -------------- */
+.seg-field { margin: 14px 0; text-align: left; }
+.seg-label {
+  display: block; margin: 0 0 8px 2px; font-size: 11.5px; font-weight: 700;
+  letter-spacing: .3px; color: var(--m3-on-surface-var);
+}
+.seg {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px;
+  padding: 4px; border-radius: 14px;
+  background: var(--m3-surface-2); border: 1px solid var(--m3-outline-var);
+}
+.seg-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 42px; padding: 0 10px; border-radius: 10px; border: 0;
+  background: transparent; color: var(--m3-on-surface-var);
+  font: 600 14px/1 inherit; transition: background .15s, color .15s;
+}
+.seg-btn.is-on {
+  background: var(--m3-surface-1); color: var(--m3-primary); box-shadow: var(--shadow-1);
+}
+
+/* --- credit / debit filter chips ------------------------------------------- */
+.kindfilter {
+  max-width: 1120px; margin: 0 auto; padding: 0 20px 12px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+}
+.rel-mode .kindfilter { display: none; }     /* the graph has no type filter */
+@media (max-width: 720px) {
+  #filterSheetBody .kindfilter { padding: 16px 0 0; }
+  #filterSheetBody .kindfilter .filter-label { width: 100%; margin-bottom: 2px; }
+}
+
+/* --- tile: nickname, type + relation tags ---------------------------------- */
+.tile-subname {
+  position: relative; margin: 3px 0 0; font-size: 13px; font-weight: 600;
+  opacity: .82; letter-spacing: .1px;
+}
+.tile-tags { position: relative; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.tile-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10.5px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase;
+  padding: 4px 9px; border-radius: 999px;
+  background: rgba(255,255,255,.16); color: var(--bank-fg, #fff);
+}
+.tile-tag svg { width: 12px; height: 12px; }
+.tile-tag.kind-debit { background: rgba(0,0,0,.22); }
+.tile-tag.rel { background: rgba(255,255,255,.22); }
+/* 2.0: Virtual / Dual ride on the same line as Credit and the relation. */
+.tile-tags { flex-wrap: nowrap; min-width: 0; }
+.tile-tag { flex: 0 0 auto; }
+.tile-tag.rel { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile-tag.mark { background: rgba(0,0,0,.26); }
+html.fit-narrow .tile-tag.mark > span { display: none; }      /* icon only when space is short */
+html.fit-narrow .tile-tag.mark { padding-left: 7px; padding-right: 7px; }
+
+/* --- Priority Pass view ----------------------------------------------------- */
+.pp-intro {
+  display: flex; align-items: center; gap: 14px; padding: 12px 4px 18px;
+}
+.pp-intro-ico {
+  flex: 0 0 auto; width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center;
+  color: var(--m3-on-primary); background: linear-gradient(135deg, var(--m3-primary), #7a86c4);
+}
+.pp-intro-title { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -.2px; }
+.pp-intro-sub { margin: 3px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--m3-on-surface-var); }
+
+.pp-list { display: grid; gap: 14px; }
+.pp-group {
+  border-radius: 20px; overflow: hidden;
+  background: var(--m3-surface-1); border: 1px solid var(--m3-outline-var); box-shadow: var(--shadow-1);
+}
+.pp-card {
+  display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+  color: var(--bank-fg, #fff);
+  background: linear-gradient(135deg, var(--bank-a), var(--bank-b));
+}
+.pp-card .glyph {
+  flex: 0 0 auto; width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center;
+  background: rgba(255,255,255,.2); font-size: 12px; font-weight: 800;
+}
+.pp-card-text { flex: 1; min-width: 0; }
+.pp-card-name { font-size: 16px; font-weight: 800; letter-spacing: -.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp-card-sub { font-size: 12px; font-weight: 600; opacity: .85; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp-card .tile-tag { flex: 0 0 auto; }
+
+.pp-item {
+  display: flex; align-items: center; gap: 8px; padding: 12px 8px 12px 16px;
+  border-top: 1px solid var(--m3-outline-var);
+}
+.pp-item-main { flex: 1; min-width: 0; }
+.pp-num {
+  font-size: 17px; font-weight: 700; letter-spacing: 1.2px; font-variant-numeric: tabular-nums;
+  color: var(--m3-on-surface); word-break: break-all;
+}
+.pp-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 5px; }
+.pp-status {
+  font-size: 10.5px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 999px;
+  background: color-mix(in srgb, #16a34a 16%, transparent); color: #15803d;
+}
+.pp-item.is-expired .pp-status { background: color-mix(in srgb, var(--m3-error) 14%, transparent); color: var(--m3-error); }
+.pp-item.is-expired .pp-num { color: var(--m3-on-surface-var); text-decoration: line-through; text-decoration-thickness: 1px; }
+.pp-dates { font-size: 12.5px; font-weight: 600; color: var(--m3-on-surface-var); }
+.pp-notes { margin-top: 5px; font-size: 13px; line-height: 1.45; color: var(--m3-on-surface-var); }
+.pp-item-actions { display: flex; flex: 0 0 auto; }
+.pp-item-actions .icon-btn { min-width: 40px; min-height: 40px; width: 40px; height: 40px; }
+
+/* the header's Network trigger and archive toggle mean nothing on the pass tab */
+.pp-mode #netToggleSlot, .pp-mode #archiveBtn { display: none; }
+
+/* --- fixes found in the 1.3.0 walkthrough ---------------------------------- */
+/* A native month picker has a ~190px intrinsic width, and a flex item's
+   min-width defaults to that content size - so two of them side by side ran
+   40px past the sheet on a 393px phone. Let the column shrink. */
+.field-row .field { min-width: 0; }
+.field input[type="month"], .field input[type="date"] { min-width: 0; width: 100%; }
+/* the "still in use" message in Settings > Relations needs its own air */
+#relMsg { margin: 8px 0 12px; }
+
+/* --- 1.3.0 icon: the Keyhole mark -------------------------------------- */
+/* The header mark and the lock badge carry the launcher icon's exact
+   drawing, on the same purple, so the brand is one mark everywhere. style.css
+   keeps its slate gradient for the desktop; these override it here only. */
+.brand-mark, .lock-badge {
+  background: linear-gradient(135deg, #6366f1 0%, #7c3aed 55%, #9333ea 100%);
+  box-shadow: 0 7px 16px rgba(124,58,237,.38), inset 0 1px 0 rgba(255,255,255,.28);
+}
+.brand-mark svg { width: 30px; height: 30px; }
+.brand:hover .brand-mark { box-shadow: 0 9px 20px rgba(124,58,237,.5), inset 0 1px 0 rgba(255,255,255,.4); }
+.an-key { transform-box: fill-box; transform-origin: center; }
+.brand:hover .an-key { animation: an-pop-key .45s .22s cubic-bezier(.34,1.56,.64,1) both; }
+@keyframes an-pop-key { from { transform: scale(0); } to { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .brand:hover .an-key { animation: none; } }
+
+/* --- credit line ---------------------------------------------------------- */
+/* The logo already reads "YourCardJourney", so the caption no longer repeats
+   the handle - it just attributes. Slightly larger and less washed out now
+   that it is two words rather than a sentence. */
+.credit-text { font-size: 13.5px; font-weight: 600; letter-spacing: .2px; }
+/* ...and it has to come BEFORE the logo, or the line reads
+   "[YourCardJourney] Shared by". Ordered in CSS rather than in the markup so
+   the four copies of the block stay identical to each other. */
+.lock-credit .credit-text, .site-credit .credit-text { order: -1; }
+.lock-credit { gap: 12px; }
+.site-credit { gap: 8px; }
+
+/* ==========================================================================
+   Welcome / unlock: "Vault door" (05-Oct-2026, twin of Gift Card Vault's
+   "Gift box"). The launcher icon's violet sweep fills the screen so the
+   splash flows straight into it; the form is a bottom sheet.
+   ========================================================================== */
+.lock-screen.vault-lock {
+  display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end;
+  /* clip, not hidden: the vault dial is wider than a phone, and an
+     overflow:hidden box can still be scrolled sideways by focusing the
+     password field - which slid the whole screen left. */
+  padding: 0; overflow: hidden; overflow: clip;
+  background: linear-gradient(160deg, #6366f1 0%, #7c3aed 55%, #9333ea 100%);
+}
+.lock-screen.vault-lock[hidden] { display: none; }
+.vault-lock .lk-art { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.vault-lock .lk-mark { position: relative; }
+.vault-lock .lk-mark svg.lk-dial {
+  position: absolute; left: 50%; top: 50%; width: 500px; height: 500px; max-width: none;
+  margin: -250px 0 0 -250px; filter: none; animation: lk-turn 90s linear infinite;
+}
+@keyframes lk-turn { to { transform: rotate(360deg); } }
+.vault-lock .lk-hero {
+  position: relative; overflow: clip; flex: 1; min-height: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px; color: #fff; text-align: center;
+  padding: calc(24px + env(safe-area-inset-top)) 20px 18px;
+}
+.vault-lock .lk-mark svg:not(.lk-dial) {
+  position: relative; display: block; width: clamp(72px, 14dvh, 120px); height: auto;
+  filter: drop-shadow(0 14px 18px rgba(20, 8, 70, .4));
+}
+.vault-lock .lk-mark .an-key { animation: an-pop-key .5s .25s cubic-bezier(.34,1.56,.64,1) both; }
+.vault-lock .lk-name { margin: 10px 0 0; font-size: clamp(24px, 4dvh, 30px); font-weight: 800; letter-spacing: -.02em; color: #fff; }
+.vault-lock .lk-tag { margin: 2px 0 0; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.85); }
+
+/* the sheet: overrides style.css's floating, centred .lock-card */
+.vault-lock .lock-card.lk-sheet {
+  position: relative; width: 100%; max-width: 520px; margin: 0 auto; text-align: left;
+  padding: 18px 20px calc(14px + env(safe-area-inset-bottom));
+  border: 0; border-radius: 26px 26px 0 0; background: var(--m3-surface-1);
+  box-shadow: 0 -14px 36px -14px rgba(20, 8, 70, .5);
+  animation: lk-sheet-up .32s cubic-bezier(.2,.9,.3,1);
+}
+@keyframes lk-sheet-up { from { transform: translateY(28px); opacity: .4; } to { transform: none; opacity: 1; } }
+.vault-lock .lk-handle { width: 38px; height: 4px; border-radius: 2px; background: var(--m3-outline-var); margin: -6px auto 12px; }
+.vault-lock .lock-title { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -.01em; text-align: left; }
+.vault-lock .lock-sub { margin: 4px 0 14px; font-size: 13.5px; line-height: 1.5; text-align: left; }
+.vault-lock .lock-bio { margin-top: 2px; }
+.vault-lock #lockBtn {
+  background: linear-gradient(135deg, #6366f1, #7c3aed 55%, #9333ea); color: #fff;
+  box-shadow: 0 10px 22px -10px rgba(124,58,237,.7);
+}
+.vault-lock .lock-note {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin: 12px 0 0; text-align: center; color: var(--m3-on-surface-var);
+}
+.vault-lock .lock-credit { margin-top: 8px; padding-top: 8px; border-top: 0; gap: 8px; }
+.vault-lock .lock-credit .credit-logo { height: 24px; width: 24px; border-radius: 7px; }
+.vault-lock .lock-credit .credit-text { font-size: 12px; }
+@media (max-height: 640px) { .vault-lock .lock-credit { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .vault-lock .lk-dial, .vault-lock .lk-mark .an-key, .vault-lock .lock-card.lk-sheet { animation: none; }
+}
+
+/* ==========================================================================
+   1.3.5: card scanner + change master password
+   ========================================================================== */
+/* entry row at the top of Add card */
+.scan-entry {
+  display: flex; align-items: center; gap: 14px; width: 100%; margin: 2px 0 14px;
+  padding: 14px 14px; border: 0; border-radius: 18px; cursor: pointer; text-align: left;
+  font: inherit; color: #fff;
+  background: linear-gradient(135deg, #6366f1 0%, #7c3aed 55%, #9333ea 100%);
+  box-shadow: 0 12px 24px -14px rgba(124,58,237,.8);
+}
+.scan-entry:active { transform: scale(.985); }
+.scan-entry-ico { flex: none; width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: rgba(255,255,255,.18); }
+.scan-entry-text { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.scan-entry-title { font-size: 16px; font-weight: 800; letter-spacing: -.01em; }
+.scan-entry-sub { font-size: 12.5px; opacity: .88; }
+.scan-entry-go { flex: none; opacity: .85; }
+#sheet[data-editing] .scan-entry { display: none; }
+/* 2.0 (feedback): Scan card + Tap card share one compact row at the top of
+   Add card. With no NFC on the phone, Scan card takes the whole row. */
+.entry-row { display: flex; gap: 10px; margin: 2px 0 14px; }
+#sheet[data-editing] .entry-row { display: none; }
+.entry-row .scan-entry { flex: 1 1 0; min-width: 0; margin: 0; gap: 10px; padding: 11px 12px; border-radius: 16px; }
+.entry-row .scan-entry-ico { width: 36px; height: 36px; border-radius: 12px; }
+.entry-row .scan-entry-title { font-size: 15px; }
+.entry-row .scan-entry-sub { font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.entry-row .scan-entry-go { display: none; }
+.scan-entry.tap-entry {
+  color: var(--m3-on-surface);
+  background: var(--m3-surface-2); border: 1px solid var(--m3-outline-var); box-shadow: none;
+}
+.scan-entry.tap-entry .scan-entry-ico { color: #6d4ce8; background: rgba(109,76,232,.12); }
+.scan-entry.tap-entry .scan-entry-sub { color: var(--m3-on-surface-var); opacity: 1; }
+.scan-entry.tap-entry[hidden] { display: none; }
+
+/* 2.0: "hold the card to the phone" (Android; iPhone shows its own sheet) */
+.nfc-wait {
+  position: fixed; inset: 0; z-index: 95; display: grid; place-items: end center;
+  background: rgba(13,10,28,.55);
+}
+.nfc-wait[hidden] { display: none; }
+.nfc-card {
+  width: min(100%, 460px); padding: 26px 22px calc(22px + env(safe-area-inset-bottom));
+  border-radius: 26px 26px 0 0; background: var(--m3-surface); color: var(--m3-on-surface); text-align: center;
+  animation: slideup .28s cubic-bezier(.2,.8,.2,1);
+}
+.nfc-anim { position: relative; width: 120px; height: 96px; margin: 0 auto 14px; }
+.nfc-phone { position: absolute; left: 34px; top: 4px; width: 52px; height: 88px; border-radius: 10px; border: 3px solid var(--m3-on-surface-var); }
+.nfc-plastic {
+  position: absolute; left: 6px; top: 34px; width: 74px; height: 46px; border-radius: 7px;
+  background: linear-gradient(135deg, #6366f1, #9333ea); box-shadow: 0 6px 14px -6px rgba(124,58,237,.7);
+  animation: nfcTap 1.8s ease-in-out infinite;
+}
+@keyframes nfcTap { 0%, 100% { transform: translate(-14px, 14px) rotate(-8deg); } 45%, 60% { transform: translate(18px, -6px) rotate(0); } }
+.nfc-card[data-state="reading"] .nfc-plastic { animation: none; transform: translate(18px, -6px); }
+.nfc-card[data-state="done"] .nfc-plastic { animation: none; transform: translate(18px, -6px); background: linear-gradient(135deg, #16a34a, #22c55e); }
+.nfc-title { margin: 0 0 4px; font-size: 18px; font-weight: 800; }
+.nfc-sub { margin: 0 0 18px; font-size: 13.5px; color: var(--m3-on-surface-var); line-height: 1.45; }
+.nfc-sub.is-err { color: var(--m3-error); }
+@media (prefers-reduced-motion: reduce) { .nfc-plastic { animation: none; transform: translate(18px, -6px); } }
+
+/* the full-screen viewfinder */
+.scanner {
+  position: fixed; inset: 0; z-index: 90; display: flex; flex-direction: column;
+  background: #0d0a1c; color: #fff; overflow: hidden;
+}
+.scanner[hidden] { display: none; }
+.scanner-top {
+  display: grid; grid-template-columns: 96px 1fr 96px; align-items: center; gap: 8px;
+  padding: calc(10px + env(safe-area-inset-top)) 10px 6px;
+}
+.scanner-top .icon-btn { color: #fff; background: rgba(255,255,255,.08); }
+.scanner-tools { grid-column: 3; justify-self: end; display: flex; gap: 8px; }
+.scanner-tool[aria-pressed="true"] { color: #1a1300; background: #ffd54a; }
+.scanner-title { grid-column: 2; text-align: center; font-size: 16px; font-weight: 800; letter-spacing: .01em; }
+.scanner-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 8px 18px; }
+.scanner-view {
+  position: relative; width: min(100%, 460px); aspect-ratio: 1.586; border-radius: 18px; overflow: hidden;
+  background: #000; box-shadow: 0 0 0 9999px rgba(13,10,28,.55);
+}
+.scanner-view video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.sv-corner { position: absolute; width: 30px; height: 30px; border: 0 solid #fff; z-index: 2; }
+.sv-corner.tl { top: 10px; left: 10px; border-top-width: 4px; border-left-width: 4px; border-top-left-radius: 12px; }
+.sv-corner.tr { top: 10px; right: 10px; border-top-width: 4px; border-right-width: 4px; border-top-right-radius: 12px; }
+.sv-corner.bl { bottom: 10px; left: 10px; border-bottom-width: 4px; border-left-width: 4px; border-bottom-left-radius: 12px; }
+.sv-corner.br { bottom: 10px; right: 10px; border-bottom-width: 4px; border-right-width: 4px; border-bottom-right-radius: 12px; }
+.sv-sweep {
+  position: absolute; left: 6%; right: 6%; top: 0; height: 2px; z-index: 2;
+  background: linear-gradient(90deg, transparent, #ff7a2f, transparent);
+  box-shadow: 0 0 14px 2px rgba(255,122,47,.7);
+  animation: sv-sweep 2.4s ease-in-out infinite alternate;
+}
+@keyframes sv-sweep { from { top: 8%; } to { top: 92%; } }
+.scanner-tip { margin: 0; text-align: center; font-size: 15px; font-weight: 700; min-height: 22px; }
+.scanner-err { margin: 0; text-align: center; font-size: 14px; color: #ffb4a8; max-width: 420px; }
+.scanner-panel {
+  background: var(--m3-surface-1); color: var(--m3-on-surface);
+  border-radius: 26px 26px 0 0; padding: 14px 18px calc(14px + env(safe-area-inset-bottom));
+}
+.sp-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 0 4px 2px; min-height: 48px; border-bottom: 1px solid var(--m3-outline-var); }
+.sp-row .sp-v { margin-left: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* the user's lock (1.3.6, option B): a small inline padlock, no box. Hidden
+   until the row has a value (space kept so values do not jump); grey and
+   open while the camera may still change it, violet and closed once kept.
+   The hit area stays 36px for a thumb; only the glyph is small. */
+.sp-pin {
+  flex: none; width: 36px; height: 36px; margin-right: -8px; display: grid; place-items: center;
+  padding: 0; border: 0; border-radius: 50%; background: transparent;
+  color: var(--m3-outline); cursor: pointer;
+}
+.sp-pin svg { width: 17px; height: 17px; }
+.sp-pin:disabled { visibility: hidden; }
+.sp-pin:active { background: color-mix(in srgb, #7c3aed 10%, transparent); }
+.sp-pin .i-lck { display: none; }
+.sp-pin[aria-pressed="true"] { color: #7c3aed; }
+html[data-theme="dark"] .sp-pin[aria-pressed="true"] { color: #a78bfa; }
+.sp-pin[aria-pressed="true"] .i-unl { display: none; }
+.sp-pin[aria-pressed="true"] .i-lck { display: block; }
+.sp-row.is-pinned .sp-v { color: var(--m3-on-surface); }
+.sp-k { font-size: 13px; font-weight: 700; color: var(--m3-on-surface-var); }
+.sp-k small { font-weight: 600; opacity: .75; margin-left: 4px; }
+.sp-v { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: .02em; color: var(--m3-outline); }
+.sp-row.is-reading .sp-v { color: var(--m3-on-surface-var); }
+.sp-row.is-locked .sp-v { color: var(--m3-on-surface); }
+.sp-row.is-locked .sp-v::after {
+  content: ""; display: inline-block; width: 16px; height: 16px; margin-left: 8px; vertical-align: -3px; border-radius: 50%;
+  background: #16a34a url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E") center/12px no-repeat;
+}
+.scanner-actions { display: flex; gap: 10px; margin-top: 12px; }
+.scanner-actions .btn { flex: 1; }
+.scanner-note { margin: 10px 0 0; text-align: center; font-size: 12px; color: var(--m3-on-surface-var); }
+@media (prefers-reduced-motion: reduce) { .sv-sweep { animation: none; top: 50%; } }
+
+/* bank type-ahead (1.3.6) - in the flow under the field, not floating, so
+   the sheet's own scrolling can never clip it */
+.bank-sug {
+  display: grid; gap: 2px; margin-top: 6px; padding: 6px; border-radius: 14px;
+  background: var(--m3-surface-1); border: 1px solid var(--m3-outline-var);
+  box-shadow: 0 10px 24px -14px rgba(30,20,80,.45);
+}
+.bank-sug[hidden] { display: none; }
+.bs-item {
+  display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 6px 8px; width: 100%;
+  border: 0; border-radius: 10px; background: transparent; color: var(--m3-on-surface);
+  font: inherit; font-size: 15px; font-weight: 700; text-align: left; cursor: pointer;
+}
+.bs-item:active { background: var(--m3-surface-3); }
+.bs-glyph {
+  flex: none; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
+  font-size: 11px; font-weight: 800; color: #fff; letter-spacing: -.02em;
+  background: linear-gradient(135deg, var(--bank-a), var(--bank-b));
+}
+.bs-glyph { width: 34px; height: 34px; border-radius: 10px; }   /* 2.0: drawn mark, not letters */
+.bs-name { flex: 1; min-width: 0; display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.bs-name.bs-add-text { display: block; white-space: nowrap; text-overflow: ellipsis; }
+.bs-name small { font-size: 12px; font-weight: 600; color: var(--m3-on-surface-var); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bs-tag { flex: none; font-size: 10.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--m3-primary); background: color-mix(in srgb, var(--m3-primary) 12%, transparent); padding: 2px 8px; border-radius: 999px; }
+.bs-item.is-add { color: var(--m3-primary); border-top: 1px dashed var(--m3-outline-var); border-radius: 0 0 10px 10px; }
+.bs-add-ico { flex: none; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-size: 18px; font-weight: 900; color: var(--m3-primary); background: color-mix(in srgb, var(--m3-primary) 12%, transparent); }
+
+/* change master password */
+/* eye toggle inside a password field (1.3.6) */
+.field .pw-eye {
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 44px; display: grid; place-items: center; padding: 0;
+  border: 0; border-radius: 50%; background: transparent; color: var(--m3-on-surface-var); cursor: pointer;
+}
+.field .pw-eye:active { background: color-mix(in srgb, var(--m3-primary) 12%, transparent); }
+.field .pw-eye .i-eye-off { display: none; }
+.field .pw-eye[aria-pressed="true"] { color: var(--m3-primary); }
+.field .pw-eye[aria-pressed="true"] .i-eye { display: none; }
+.field .pw-eye[aria-pressed="true"] .i-eye-off { display: block; }
+/* 2.0: clear button inside the Cardholder name field */
+.field .field-clear {
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 44px; display: grid; place-items: center; padding: 0;
+  border: 0; border-radius: 50%; background: transparent; color: var(--m3-on-surface-var); cursor: pointer;
+}
+.field .field-clear[hidden] { display: none; }
+.field .field-clear:active { background: color-mix(in srgb, var(--m3-primary) 12%, transparent); }
+#fHolder, #fNumber { padding-right: 50px; }
+#pwCur, #pwNew, #pwNew2, #lockPw, #lockPw2 { padding-right: 50px; }  /* no :has() - iOS 15.0-15.3 */
+.pw-form { display: grid; gap: 10px; margin-top: 4px; }
+.pw-form .field { margin: 0; }
+.pw-actions { display: flex; gap: 10px; justify-content: flex-end; }
+#pwMsg { margin: 0; }
+
+
+/* --- 1.3.5: changing phones + expiring nudge ------------------------------ */
+.move-steps { margin: 4px 0 10px; padding-left: 22px; display: grid; gap: 8px; font-size: 13.5px; line-height: 1.5; color: var(--m3-on-surface); }
+.move-steps li::marker { font-weight: 800; color: #7c3aed; }
+.nudge {
+  display: flex; align-items: stretch; margin: 4px 0 14px; border-radius: 14px; overflow: hidden;
+  background: color-mix(in srgb, #f59e0b 14%, var(--m3-surface)); color: #b45309;
+  border: 1px solid color-mix(in srgb, #f59e0b 40%, transparent);
+}
+.nudge[hidden] { display: none; }
+.nudge-open {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; text-align: left;
+  padding: 11px 12px; background: transparent; border: 0; color: inherit; font: inherit;
+  font-weight: 700; font-size: 13.5px; line-height: 1.35; cursor: pointer;
+}
+.nudge-open svg { flex: none; }
+#nudgeText { flex: 1; min-width: 0; color: var(--m3-on-surface); }
+.nudge-go { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+.nudge-x { width: 44px; flex: none; border: 0; background: transparent; color: inherit; font-size: 20px; cursor: pointer; }
+.exp-list { display: grid; gap: 8px; margin: 12px 0 4px; }
+.exp-row {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; text-align: left; cursor: pointer;
+  border-radius: 14px; border: 1px solid var(--m3-outline-var); background: var(--m3-surface-2, var(--m3-surface-1)); color: var(--m3-on-surface); font: inherit;
+}
+.exp-row .glyph { flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-size: 12px; font-weight: 800; color: #fff; background: linear-gradient(135deg, var(--bank-a, #4f5b92), var(--bank-b, #7a86c4)); }
+.exp-text { flex: 1; min-width: 0; display: grid; }
+.exp-text small { color: var(--m3-on-surface-var); font-size: 12px; }
+.exp-when { flex: none; font-size: 12px; font-weight: 800; color: #b45309; }
+.exp-row.is-gone .exp-when { color: var(--m3-error); }
+
+/* --- never wider than the screen (1.3.6) ---------------------------------- */
+/* User report: on a narrow phone, a bigger font size or a large "Screen
+   zoom", the Network pill, the Self + lock control and the tile buttons ran
+   past the right edge - and on a curved display that edge is already bent
+   away. Everything in these rows now SHRINKS (text ellipsis) instead of
+   overflowing; at the narrowest widths the decoration goes first. */
+.tabs { min-width: 0; }
+.tabs .tab { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tabs .tab-icon { flex: 0 0 auto; }
+.tabs-right { flex: 0 1 auto; min-width: 0; }
+.rel-pill { min-width: 0; }
+
+@media (max-width: 720px) {
+  .mfilter-bar { overflow-x: hidden; gap: 6px; }
+  .mfilter-pill { flex: 0 1 auto; min-width: 0; gap: 6px; }
+  .mfilter-pill > * { flex: 0 0 auto; }
+  .mfilter-pill > .mfp-text { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+}
+
+.tile-head-row { min-width: 0; }
+.tile-bank { min-width: 0; flex: 0 0 auto; max-width: 55%; }   /* the network label gives way first */
+.tile-bank > .glyph { flex: 0 0 auto; }
+.tile-head-right { min-width: 0; flex: 0 1 auto; }
+.tile-head-right > * { flex: 0 0 auto; }
+.tile-head-right > .tile-network { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile-foot { flex-wrap: wrap; row-gap: 2px; justify-content: flex-end; }
+
+.tile-bank { overflow: hidden; }
+.tile-bank-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile-number .num { min-width: 0; }
+
+/* Compact: set by fitToScreen() in app.js when a label would be cut short. */
+html.fit-narrow .tabs .tab { font-size: 12.5px; padding-left: 7px; padding-right: 7px; }
+html.fit-narrow .rel-pill { font-size: 12px; }
+html.fit-narrow .mfilter-pill { padding: 6px 10px; }
+html.fit-narrow .mfilter-pill .mfp-glyph.mfp-all { display: none; }   /* "All banks" grid icon */
+html.fit-narrow .tile-foot .chip-btn { padding: 6px 7px; gap: 4px; }
+html.fit-narrow .tile-role > span { display: none; }                  /* star / branch icon stays */
+html.fit-narrow .tile-role { padding-left: 6px; padding-right: 6px; }
+html.fit-narrow .tile-number { gap: 4px; padding-right: 8px; }
+html.fit-narrow .tile-number .num { letter-spacing: .5px; }
+html.fit-narrow .tile-number .mini-copy { width: 26px; }
+
+/* Tightest: still cut short after the compact step. */
+html.fit-tiny .rel-pill-ico { display: none; }
+/* The ▾ arrows stay at every size (user, 09-Oct): they say "this opens a menu". */
+html.fit-tiny .mfilter-pill { font-size: 13px; }
+html.fit-tiny .tabs .tab { font-size: 12px; }
+html.fit-tiny .rel-pill { font-size: 11.5px; padding-left: 6px; padding-right: 4px; gap: 4px; }
+html.fit-tiny .mfilter-pill .mfp-caret, html.fit-tiny .rel-pill .mfp-caret { margin-left: -4px; }
+html.fit-tiny .tabs .tab { padding-left: 5px; padding-right: 5px; }
+html.fit-tiny .tabs-right { flex-shrink: 2; }
+html.fit-tiny .mfilter-bar { gap: 4px; }
+html.fit-tiny .mfilter-pill { padding: 6px 8px; gap: 4px; }
+html.fit-tiny .tile-number .num { font-size: 15px; letter-spacing: 0; }
+html.fit-tiny .tile-foot { gap: 0; }
+
+/* --- Terms & conditions (1.3.6) ------------------------------------------- */
+.terms-date { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: var(--m3-on-surface-var); }
+.terms-list { margin: 0 0 16px; padding-left: 22px; display: grid; gap: 12px; }
+.terms-list li { font-size: 13.5px; line-height: 1.6; color: var(--m3-on-surface-var); padding-left: 2px; }
+.terms-list li::marker { color: var(--m3-primary); font-weight: 700; }
+.terms-list b { color: var(--m3-on-surface); font-weight: 700; }
+.sheet-body.terms #termsDone { margin-top: 4px; }
+.lock-terms { margin: 12px 0 0; font-size: 12.5px; line-height: 1.5; text-align: center; color: var(--m3-on-surface-var); }
+.link-btn {
+  border: 0; background: none; padding: 0; font: inherit; font-weight: 700;
+  color: var(--m3-primary); text-decoration: underline; text-underline-offset: 2px; cursor: pointer;
+}
+
+/* Terms: security section (21-Oct-2026) */
+.vault-h.terms-sec { margin: 4px 0 10px; }
+
+/* ==========================================================================
+   1.3.9 (closed-test feedback): D1 no glows, B2 tap number to copy,
+   B3 "Copied" tick on the control, B4 revealed card hides after 45 s.
+   Only these four were picked from proposed-1.3.9-polish/; the gradients
+   themselves stay. Overrides only - style.css stays as the desktop's.
+   ========================================================================== */
+/* D1: no glow under the logo, lock badge, header, Unlock, Scan card, scanner line */
+.topbar, html[data-theme="dark"] .topbar { box-shadow: none; }
+.brand-mark, .lock-badge, .brand:hover .brand-mark { box-shadow: none; }
+.vault-lock .lk-mark svg:not(.lk-dial) { filter: none; }
+.vault-lock #lockBtn { box-shadow: none; }
+.scan-entry, .sv-sweep { box-shadow: none; }
+
+/* B2: the number itself is a copy button */
+.tile-number .num { cursor: pointer; border-radius: 8px; }
+/* B3: copy confirmation lives on the control that was tapped (no pop-up) */
+.chip-btn.is-copied, .mini-copy.is-copied { color: #1f8a4c; background: color-mix(in srgb, #2e9e64 12%, transparent); }
+html[data-theme="dark"] .chip-btn.is-copied, html[data-theme="dark"] .mini-copy.is-copied { color: #7fd6a4; }
+.tile-number .num.is-copied { color: #1f8a4c; letter-spacing: 0; }
+html[data-theme="dark"] .tile-number .num.is-copied { color: #7fd6a4; }
+/* B4: a quiet countdown on the Hide control */
+.chip-btn .rv-left { font-variant-numeric: tabular-nums; opacity: .7; font-weight: 500; margin-left: 2px; }
+
+/* Export sheet: the "Include CVV" switch (off by default) */
+.export-cvv { margin: 10px 0 2px; }
+
+/* 2.0: Priority Pass scan - camera button in the pass number box, and the
+   scanner showing only Number + Expiry in pass mode. */
+.field .field-scan { color: var(--m3-primary); }
+#ppNumber { padding-right: 50px; }
+#scanner[data-mode="pp"] .sp-row[data-k="cvv"],
+#scanner[data-mode="pp"] .sp-row[data-k="name"] { display: none; }
+/* 2.0: version + scanner / NFC status at the foot of Settings */
+.app-info { margin: 14px 0 0; text-align: center; font-size: 12px; line-height: 1.5; color: var(--m3-on-surface-var); }

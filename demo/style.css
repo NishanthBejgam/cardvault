@@ -1,0 +1,1003 @@
+/* =========================================================================
+   Card Vault — My Cards. Material 3, bank-first design system.
+   The tile is an information container, never a picture of a payment card.
+   ========================================================================= */
+
+:root {
+  /* Material 3 baseline (light) */
+  --m3-primary:        #4f5b92;
+  --m3-on-primary:     #ffffff;
+  --m3-primary-container:#dde7ec;
+  --m3-surface:        #f3f6f8;
+  /* Page background — matched to Card Ledger's soft mint-neutral gradient. */
+  --bg-grad:           radial-gradient(1100px 560px at 88% -10%, #e3f4ec 0%, #f3f6f8 55%);
+  /* Cool-neutral surface ramp (was lavender-tinted) — matched to Card Ledger. */
+  --m3-surface-1:      #ffffff;
+  --m3-surface-2:      #eef1f4;
+  --m3-surface-3:      #e4eaee;
+  --m3-surface-variant:#dbe2e7;
+  --m3-on-surface:     #122029;
+  --m3-on-surface-var: #4c5a64;
+  --m3-outline:        #6b7a84;
+  --m3-outline-var:    #d9e0e5;
+  --m3-error:          #ba1a1a;
+  --m3-scrim:          rgba(20,19,26,.42);
+  --shadow-1: 0 1px 2px rgba(0,0,0,.10), 0 1px 3px rgba(0,0,0,.06);
+  --shadow-2: 0 2px 6px rgba(0,0,0,.10), 0 6px 16px rgba(0,0,0,.10);
+  --shadow-3: 0 8px 28px rgba(0,0,0,.18);
+  --r-lg: 24px; --r-md: 16px; --r-sm: 12px;
+  --header-h: 108px;
+  --font: "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+
+html[data-theme="dark"] {
+  --m3-primary:        #bcc3ff;
+  --m3-on-primary:     #263063;
+  --m3-primary-container:#22333d;
+  --m3-surface:        #0b1418;
+  /* Page background — matched to Card Ledger's dark mint-neutral gradient. */
+  --bg-grad:           radial-gradient(1100px 560px at 88% -10%, #103127 0%, #0b1418 58%);
+  /* Cool-neutral surface ramp (was lavender-tinted) — matched to Card Ledger. */
+  --m3-surface-1:      #122029;
+  --m3-surface-2:      #182c37;
+  --m3-surface-3:      #203a48;
+  --m3-surface-variant:#24404e;
+  --m3-on-surface:     #e7f0ee;
+  --m3-on-surface-var: #b3c4cc;
+  --m3-outline:        #8da3ac;
+  --m3-outline-var:    #253a45;
+  --m3-scrim:          rgba(0,0,0,.6);
+  --shadow-1: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-2: 0 4px 14px rgba(0,0,0,.5);
+  --shadow-3: 0 10px 30px rgba(0,0,0,.6);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  background: var(--bg-grad);
+  background-color: var(--m3-surface);
+  color: var(--m3-on-surface);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+[hidden] { display: none !important; }
+button { font-family: inherit; cursor: pointer; }
+
+/* Bank themes are data-driven: each tile/chip carries its own --bank-* colours
+   inline (see BANKS in app.js), so a new bank never needs new CSS here. */
+
+/* =========================================================================
+   Lock screen
+   ========================================================================= */
+.lock-screen {
+  position: fixed; inset: 0; display: grid; place-items: center; padding: 24px;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, var(--m3-primary-container), transparent 60%),
+    radial-gradient(1000px 500px at 110% 120%, var(--m3-surface-3), transparent 55%),
+    var(--m3-surface);
+}
+.lock-card {
+  width: min(400px, 100%); background: var(--m3-surface-1);
+  border: 1px solid var(--m3-outline-var); border-radius: 28px;
+  padding: 40px 32px 28px; box-shadow: var(--shadow-3); text-align: center;
+  animation: rise .5s cubic-bezier(.2,.8,.2,1);
+}
+.lock-badge {
+  width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 20px;
+  display: grid; place-items: center; color: var(--m3-on-primary);
+  background: linear-gradient(135deg, var(--m3-primary), #7a86c4);
+  box-shadow: var(--shadow-2);
+}
+.lock-title { margin: 0; font-size: 26px; letter-spacing: -.4px; }
+.lock-sub { margin: 8px 0 22px; color: var(--m3-on-surface-var); font-size: 14px; }
+.lock-error { color: var(--m3-error); font-size: 13px; margin: 4px 0 -6px; }
+.lock-note { margin: 18px 0 0; font-size: 12px; color: var(--m3-outline); }
+.btn-block { width: 100%; margin-top: 8px; }
+
+/* =========================================================================
+   Activation + licence
+   The activation card sits in front of the lock screen: until this clears,
+   the vault is never opened and no card data is read from disk.
+   ========================================================================= */
+.lock-card-wide { width: min(470px, 100%); text-align: left; }
+.lock-card-wide .lock-badge { margin-left: 0; }
+.lock-card-wide .lock-title,
+.lock-card-wide .lock-sub { text-align: left; }
+
+.act-label {
+  display: block; font-size: 12px; font-weight: 700; letter-spacing: .03em;
+  text-transform: uppercase; color: var(--m3-on-surface-var); margin: 20px 0 8px;
+}
+.mid-box {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--m3-surface-2); border: 1px solid var(--m3-outline-var);
+  border-radius: 14px; padding: 12px 12px 12px 14px;
+}
+.mid-box code {
+  flex: 1; min-width: 0; font-size: 12.5px; letter-spacing: .04em; line-height: 1.5;
+  font-family: "Cascadia Mono", Consolas, monospace; word-break: break-all;
+  color: var(--m3-on-surface);
+}
+.btn-sm { padding: 7px 14px; font-size: 12.5px; border-radius: 999px; flex: none; }
+.act-note { margin: 8px 0 0; font-size: 11.5px; color: var(--m3-outline); }
+
+.act-code {
+  width: 100%; padding: 12px 14px; border-radius: 14px; resize: vertical;
+  font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px;
+  line-height: 1.6; letter-spacing: .02em; word-break: break-all;
+  background: var(--m3-surface-2); color: var(--m3-on-surface);
+  border: 1px solid var(--m3-outline-var); outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.act-code:focus {
+  border-color: var(--m3-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--m3-primary) 18%, transparent);
+}
+.act-detail {
+  margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--m3-outline-var);
+  display: grid; grid-template-columns: auto 1fr; gap: 7px 16px; font-size: 13px;
+}
+.act-detail dt { color: var(--m3-on-surface-var); font-size: 12px; font-weight: 600; }
+.act-detail dd { margin: 0; word-break: break-word; }
+
+/* Licence panel inside the app (Step 7 information screen) */
+.lic-panel { display: grid; grid-template-columns: auto 1fr; gap: 9px 18px; font-size: 13.5px; }
+.lic-panel dt { color: var(--m3-on-surface-var); font-size: 12.5px; font-weight: 600; }
+.lic-panel dd { margin: 0; word-break: break-word; }
+.lic-panel dd code { font-size: 12px; letter-spacing: .03em; }
+.lic-badge {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px;
+  border-radius: 999px; font-size: 12px; font-weight: 700;
+}
+
+/* The header chip. Neutral by default so a healthy licence is quiet; it only
+   earns colour when the user needs to act (expiring soon, or lapsed). */
+.lic-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 14px 7px 11px; border-radius: 999px;
+  font-family: inherit; font-size: 12.5px; font-weight: 650; line-height: 1;
+  background: var(--m3-surface-3); color: var(--m3-on-surface-var);
+  border: 1px solid var(--m3-outline-var); white-space: nowrap;
+  transition: filter .15s, background .15s;
+}
+.lic-chip:hover { filter: brightness(.97); }
+html[data-theme="dark"] .lic-chip:hover { filter: brightness(1.15); }
+.lic-chip svg { flex: none; opacity: .85; }
+/* Tinted rather than filled: the chip sits in a busy header, so it carries
+   just enough colour to be noticed without shouting over the card tiles. The
+   fill is a translucent wash of the status colour, with a matching border
+   doing most of the work of holding the shape. */
+.lic-chip.is-warn {
+  background: color-mix(in srgb, #c98a00 14%, transparent);
+  border-color: color-mix(in srgb, #c98a00 32%, transparent);
+  color: #8a5a00;
+}
+.lic-chip.is-bad {
+  background: color-mix(in srgb, var(--m3-error) 11%, transparent);
+  border-color: color-mix(in srgb, var(--m3-error) 28%, transparent);
+  color: var(--m3-error);
+}
+html[data-theme="dark"] .lic-chip.is-warn {
+  background: color-mix(in srgb, #ffd48a 12%, transparent);
+  border-color: color-mix(in srgb, #ffd48a 26%, transparent);
+  color: #ffd48a;
+}
+html[data-theme="dark"] .lic-chip.is-bad {
+  background: color-mix(in srgb, var(--m3-error) 15%, transparent);
+  border-color: color-mix(in srgb, var(--m3-error) 30%, transparent);
+}
+
+/* Status strip at the top of the licence panel */
+.lic-status {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 14px 16px; border-radius: 16px; margin-bottom: 20px;
+  background: var(--m3-surface-2); font-size: 13.5px; line-height: 1.5;
+}
+.lic-status.is-warn {
+  background: color-mix(in srgb, #c98a00 13%, transparent); color: #8a5a00;
+}
+.lic-status.is-bad {
+  background: color-mix(in srgb, var(--m3-error) 10%, transparent); color: var(--m3-error);
+}
+html[data-theme="dark"] .lic-status.is-warn {
+  background: color-mix(in srgb, #ffd48a 11%, transparent); color: #ffd48a;
+}
+.lic-foot {
+  margin: 20px 0 0; padding-top: 16px; font-size: 11.5px; line-height: 1.6;
+  color: var(--m3-outline); border-top: 1px solid var(--m3-outline-var);
+}
+
+/* Renewal block. Collapsed by default so the panel stays a status screen, but
+   always reachable - waiting until the licence has lapsed to offer this is too
+   late to be any use. */
+.lic-renew { margin-top: 20px; padding-top: 6px; border-top: 1px solid var(--m3-outline-var); }
+.lic-renew-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 4px; font-size: 13px; font-weight: 600;
+}
+.lic-renew-toggle svg { transition: transform .2s ease; }
+.lic-renew-toggle.is-open svg { transform: rotate(180deg); }
+.lic-renew #licRenewBody { padding: 4px 0 2px; }
+.lic-renew .mid-box { margin-bottom: 12px; }
+.lic-renew .act-code { margin-bottom: 4px; }
+.micro-note { margin: 0 0 12px; font-size: 12px; line-height: 1.6; color: var(--m3-on-surface-var); }
+.lic-ok-msg {
+  color: var(--ok, #1d6d43); font-size: 13px; font-weight: 600; margin: 10px 0 -4px;
+}
+html[data-theme="dark"] .lic-ok-msg { color: #86d9a8; }
+.lic-ok   { background: #cdefda; color: #1d6d43; }
+.lic-warn { background: #ffe3ad; color: #8a5a00; }
+.lic-bad  { background: var(--m3-error-container, #ffdad6); color: var(--m3-error); }
+html[data-theme="dark"] .lic-ok   { background: #14432a; color: #86d9a8; }
+html[data-theme="dark"] .lic-warn { background: #4a3200; color: #ffd48a; }
+
+/* A licence in its grace window makes the app read-only. Editing affordances
+   are hidden rather than left to fail, so the user is never invited to try
+   something the server will refuse. */
+body.is-readonly .btn-add,
+body.is-readonly #emptyAddBtn,
+body.is-readonly #sampleRemove { display: none !important; }
+.ro-banner {
+  background: color-mix(in srgb, #c98a00 14%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, #c98a00 26%, transparent);
+  color: #8a5a00; padding: 10px 16px; font-size: 13px;
+  text-align: center; font-weight: 600;
+}
+html[data-theme="dark"] .ro-banner {
+  background: color-mix(in srgb, #ffd48a 11%, transparent);
+  border-bottom-color: color-mix(in srgb, #ffd48a 22%, transparent);
+  color: #ffd48a;
+}
+
+/* =========================================================================
+   Shared YourCardJourney branding credit (logo + handle)
+   ========================================================================= */
+.site-credit {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  margin: 48px auto 8px; padding-top: 28px; border-top: 1px solid var(--m3-outline-var);
+}
+.lock-credit {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--m3-outline-var);
+}
+.credit-logo {
+  height: 72px; width: 72px; border-radius: 18px; object-fit: cover;
+  box-shadow: var(--shadow-1);
+}
+.lock-credit .credit-logo { height: 40px; width: 40px; border-radius: 12px; }
+.credit-text { color: var(--m3-on-surface-var); font-size: 13px; }
+.credit-text .handle { color: var(--m3-primary); font-weight: 700; }
+
+/* =========================================================================
+   Text fields (Material 3 filled)
+   ========================================================================= */
+.field { position: relative; margin: 14px 0; text-align: left; }
+.field input, .field select, .field textarea {
+  width: 100%; font: inherit; font-size: 15px; color: var(--m3-on-surface);
+  background: var(--m3-surface-2); border: none;
+  border-bottom: 2px solid var(--m3-outline-var);
+  border-radius: 10px 10px 0 0; padding: 22px 14px 8px; outline: none;
+  transition: border-color .18s, background .18s;
+}
+.field textarea { resize: vertical; min-height: 56px; }
+.field select { padding-top: 22px; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24'%3E%3Cpath fill='%23777680' d='m7 10 5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; }
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-bottom-color: var(--m3-primary); background: var(--m3-surface-3);
+}
+.field label {
+  position: absolute; left: 14px; top: 16px; font-size: 15px;
+  color: var(--m3-on-surface-var); pointer-events: none;
+  transition: all .16s ease; transform-origin: left;
+}
+.field input:focus + label, .field input:not(:placeholder-shown) + label,
+.field textarea:focus + label, .field textarea:not(:placeholder-shown) + label {
+  top: 7px; font-size: 11.5px; color: var(--m3-primary);
+}
+.field label.static-label, .field select + label { top: 7px; font-size: 11.5px; }
+.field-row { display: flex; gap: 12px; }
+.field-row .field { flex: 1; }
+
+/* =========================================================================
+   Buttons
+   ========================================================================= */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; justify-content: center;
+  border: none; border-radius: 999px; padding: 10px 20px; font-size: 14px;
+  font-weight: 600; letter-spacing: .2px; transition: filter .15s, background .15s, box-shadow .15s;
+}
+.btn:active { transform: translateY(1px); }
+.btn-filled { background: var(--m3-primary); color: var(--m3-on-primary); box-shadow: var(--shadow-1); }
+.btn-filled:hover { filter: brightness(1.06); box-shadow: var(--shadow-2); }
+.btn-tonal { background: var(--m3-primary-container); color: var(--m3-primary); }
+.btn-tonal:hover { filter: brightness(.98); }
+.btn-text { background: transparent; color: var(--m3-primary); }
+.btn-text:hover { background: color-mix(in srgb, var(--m3-primary) 10%, transparent); }
+.btn-danger { background: var(--m3-error); color: #fff; }
+.btn-add { padding: 9px 16px; }
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 50%; border: none; background: transparent;
+  color: var(--m3-on-surface-var); display: grid; place-items: center;
+  transition: background .15s, color .15s;
+}
+.icon-btn:hover { background: var(--m3-surface-3); color: var(--m3-on-surface); }
+.icon-btn.is-active { background: var(--m3-primary); color: var(--m3-on-primary); }
+.icon-btn.is-active:hover { background: var(--m3-primary); color: var(--m3-on-primary); filter: brightness(1.06); }
+
+/* =========================================================================
+   Top bar + tabs
+   ========================================================================= */
+/* header division: its own panel colour on the tinted page, not the page colour.
+   No gradient rule along the bottom edge here - the active tab's indicator
+   already lives on that line. */
+.topbar {
+  position: sticky; top: 0; z-index: 30;
+  background: color-mix(in srgb, var(--m3-surface-1) 90%, var(--m3-primary) 5%);
+  backdrop-filter: saturate(1.35) blur(12px);
+  border-bottom: 1px solid color-mix(in srgb, var(--m3-primary) 18%, var(--m3-outline-var));
+  box-shadow: 0 1px 0 rgba(255,255,255,.55) inset, 0 6px 18px -12px rgba(124,58,237,.45);
+}
+html[data-theme="dark"] .topbar { box-shadow: 0 6px 20px -14px #000; }
+.topbar-inner {
+  max-width: 1120px; margin: 0 auto; padding: 12px 20px 6px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.brand { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.brand:active { opacity: .75; }
+.brand-mark {
+  width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center;
+  color: var(--m3-on-primary); background: linear-gradient(140deg,#6366f1 0%,#7c3aed 55%,#9333ea 100%);
+  box-shadow: 0 7px 16px rgba(124,58,237,.4), inset 0 1px 0 rgba(255,255,255,.35);
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+.brand:hover .brand-mark { transform: translateY(-1px); filter: brightness(1.06); box-shadow: 0 9px 20px rgba(124,58,237,.5), inset 0 1px 0 rgba(255,255,255,.45); }
+.brand:focus-visible { outline: none; }
+.brand:focus-visible .brand-mark { outline: 2px solid #7c3aed; outline-offset: 3px; }
+/* Animated brand icon — mirrors the YourCardJourney portal hover motion */
+.an-stripe, .an-sig { transform-box: fill-box; transform-origin: left center; }
+.brand:hover .an-stripe { animation: an-grow .5s cubic-bezier(.22,1,.36,1) both; }
+.brand:hover .an-sig { animation: an-grow .45s .22s cubic-bezier(.22,1,.36,1) both; }
+@keyframes an-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .brand:hover .an-stripe, .brand:hover .an-sig { animation: none; } }
+.brand-text { display: flex; flex-direction: column; line-height: 1.05; gap: 2px; }
+.brand-tag {
+  font-size: 10px; letter-spacing: .16em; font-weight: 800; align-self: flex-start;
+  text-transform: uppercase; color: var(--m3-on-surface-var);
+}
+.brand-name { font-size: 20px; font-weight: 700; letter-spacing: -.3px; white-space: nowrap; }
+.topbar-actions { display: flex; align-items: center; gap: 6px; }
+.i-moon { display: none; } html[data-theme="dark"] .i-sun { display: none; }
+html[data-theme="dark"] .i-moon { display: block; }
+
+.tabs { max-width: 1120px; margin: 0 auto; padding: 0 20px; display: flex; gap: 4px; }
+.tab {
+  position: relative; background: none; border: none; padding: 12px 18px 14px;
+  font-size: 14px; font-weight: 600; color: var(--m3-on-surface-var);
+  border-radius: 10px 10px 0 0;
+}
+.tab.is-active { color: var(--m3-primary); }
+.tab.is-active::after {
+  content: ""; position: absolute; left: 14px; right: 14px; bottom: 0; height: 3px;
+  background: var(--m3-primary); border-radius: 3px 3px 0 0;
+}
+.tab.is-disabled { color: var(--m3-outline); cursor: not-allowed; }
+.tab .soon {
+  font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px;
+  background: var(--m3-surface-3); color: var(--m3-outline); margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* =========================================================================
+   Sticky bank selector
+   ========================================================================= */
+.bankbar {
+  position: sticky; top: var(--topbar-h, 108px); z-index: 20;
+  background: color-mix(in srgb, var(--m3-surface) 92%, transparent);
+  backdrop-filter: blur(10px); border-bottom: 1px solid var(--m3-outline-var);
+}
+/* The bank selector WRAPS rather than scrolling sideways: chips flow onto as
+   many rows as needed (roughly 5-7 per row), so every bank is reachable
+   without a hidden horizontal scroll. */
+.bankbar-scroll {
+  max-width: 1120px; margin: 0 auto; padding: 12px 20px; display: flex; gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Collapsible network filter (below the bank selector) */
+.netfilter {
+  max-width: 1120px; margin: 0 auto; padding: 0 20px 12px;
+  display: flex; flex-direction: column; gap: 8px; align-items: flex-start;
+}
+/* The "Network" dropdown trigger — sits collapsed by default like a select. */
+.net-toggle {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--m3-outline-var); background: var(--m3-surface-2);
+  color: var(--m3-on-surface); font-weight: 600; font-size: 13px;
+  border-radius: 999px; padding: 7px 12px 7px 9px;
+  transition: transform .12s, box-shadow .15s, background .15s, border-color .15s;
+}
+.net-toggle:hover { transform: translateY(-1px); box-shadow: var(--shadow-1); }
+.net-toggle.has-selection {
+  color: var(--m3-on-primary); border-color: transparent;
+  background: linear-gradient(135deg, var(--m3-primary), #7a86c4); box-shadow: var(--shadow-1);
+}
+.net-toggle .nt-icon {
+  width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center;
+  background: var(--m3-surface-3); color: var(--m3-on-surface-var);
+}
+.net-toggle.has-selection .nt-icon { background: rgba(255,255,255,.22); color: var(--m3-on-primary); }
+.net-toggle .nt-label { letter-spacing: .2px; }
+.net-toggle .nt-value {
+  font-weight: 700; padding: 1px 8px; border-radius: 999px; font-size: 12px;
+  background: var(--m3-surface-3); color: var(--m3-primary);
+}
+.net-toggle.has-selection .nt-value { background: rgba(255,255,255,.24); color: var(--m3-on-primary); }
+.net-toggle .nt-caret { transition: transform .2s ease; }
+.net-toggle.is-open .nt-caret { transform: rotate(180deg); }
+
+/* The panel that opens under the trigger: networks, then variants. */
+.net-panel { display: flex; flex-direction: column; gap: 8px; width: 100%;
+  animation: netdrop .2s cubic-bezier(.2,.8,.2,1); }
+@keyframes netdrop { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.netbar-scroll {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+}
+.filter-label {
+  flex: 0 0 auto; font-size: 10.5px; font-weight: 800; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--m3-on-surface-var); padding-right: 2px;
+}
+.filter-label.sub { color: var(--m3-primary); }
+.net-chip, .var-chip {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 7px;
+  border: 1px solid var(--m3-outline-var); background: var(--m3-surface-2);
+  color: var(--m3-on-surface); font-weight: 600; border-radius: 999px;
+  transition: transform .12s, box-shadow .15s, background .15s, border-color .15s;
+}
+.net-chip { padding: 6px 12px 6px 7px; font-size: 13px; }
+.var-chip { padding: 5px 12px; font-size: 12.5px; }
+.net-chip:hover, .var-chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-1); }
+.net-chip.is-active, .var-chip.is-active {
+  color: var(--m3-on-primary); border-color: transparent;
+  background: linear-gradient(135deg, var(--m3-primary), #7a86c4); box-shadow: var(--shadow-1);
+}
+.net-glyph {
+  min-width: 22px; height: 22px; padding: 0 5px; border-radius: 7px;
+  display: inline-grid; place-items: center; font-size: 10px; font-weight: 800;
+  background: var(--m3-surface-3); color: var(--m3-on-surface-var);
+}
+.net-chip.is-active .net-glyph { background: rgba(255,255,255,.22); color: var(--m3-on-primary); }
+.net-chip .count, .var-chip .count {
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+  display: inline-grid; place-items: center; font-size: 10.5px; font-weight: 700;
+  background: var(--m3-surface-3); color: var(--m3-on-surface-var);
+}
+.net-chip.is-active .count, .var-chip.is-active .count {
+  background: rgba(255,255,255,.24); color: var(--m3-on-primary);
+}
+.bank-chip {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 9px;
+  padding: 7px 14px 7px 8px; border-radius: 999px;
+  background: var(--m3-surface-2); border: 1px solid var(--m3-outline-var);
+  color: var(--m3-on-surface); font-size: 13.5px; font-weight: 600;
+  transition: transform .12s, box-shadow .15s, border-color .15s, background .15s;
+}
+.bank-chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-1); }
+.bank-chip.is-active {
+  border-color: transparent; color: var(--bank-fg, #fff);
+  background: linear-gradient(135deg, var(--bank-a, var(--m3-primary)), var(--bank-b, #7a86c4));
+  box-shadow: var(--shadow-2);
+}
+.bank-chip .glyph {
+  width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center;
+  font-size: 11px; font-weight: 800; letter-spacing: .3px;
+  color: var(--bank-fg, #fff);
+  background: linear-gradient(135deg, var(--bank-a, var(--m3-outline)), var(--bank-b, var(--m3-on-surface-var)));
+}
+.bank-chip.is-active .glyph { background: rgba(255,255,255,.22); }
+.bank-chip .count {
+  min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px;
+  display: inline-grid; place-items: center; font-size: 11px; font-weight: 700;
+  background: var(--m3-surface-3); color: var(--m3-on-surface-var);
+}
+.bank-chip.is-active .count { background: rgba(255,255,255,.24); color: var(--bank-fg, #fff); }
+.bank-chip.all .glyph {
+  background: linear-gradient(135deg, var(--m3-primary), #7a86c4);
+}
+
+/* =========================================================================
+   Content + alphabetical groups
+   ========================================================================= */
+.content { max-width: 1120px; margin: 0 auto; padding: 8px 20px 96px; }
+
+/* Cards are grouped into one section per bank (A→Z by bank name) on the "All"
+   view; a single-bank view is one plain grid with no header. */
+.bank-group { margin-top: 6px; }
+.bank-head {
+  position: sticky; top: var(--alpha-top, 165px); z-index: 10;
+  display: flex; align-items: center; gap: 10px; padding: 14px 4px 10px;
+  background: linear-gradient(var(--m3-surface) 68%, transparent);
+}
+.bank-head .glyph {
+  width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center;
+  font-size: 11px; font-weight: 800; letter-spacing: .3px; color: var(--bank-fg, #fff);
+  background: linear-gradient(135deg, var(--bank-a, var(--m3-primary)), var(--bank-b, #7a86c4));
+}
+.bank-head .bank-title {
+  font-size: 15px; font-weight: 800; letter-spacing: -.2px; color: var(--m3-on-surface);
+}
+.bank-head .count {
+  min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px;
+  display: inline-grid; place-items: center; font-size: 11px; font-weight: 700;
+  background: var(--m3-surface-2); color: var(--m3-on-surface-var);
+}
+.card-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+/* One-time notice offering to remove the 25 sample cards seeded earlier. */
+.sample-banner {
+  display: flex; align-items: center; gap: 14px; margin: 14px 0 4px;
+  padding: 14px 16px; border-radius: var(--r-md);
+  background: var(--m3-primary-container); color: var(--m3-on-surface);
+  border: 1px solid var(--m3-outline-var); box-shadow: var(--shadow-1);
+}
+.sample-banner .sb-text { flex: 1; font-size: 14px; line-height: 1.45; }
+.sample-banner .sb-text b { color: var(--m3-primary); }
+.sample-banner .sb-actions { display: flex; gap: 8px; flex: 0 0 auto; }
+
+/* =========================================================================
+   Card tile — information container in the bank's design language
+   ========================================================================= */
+.tile {
+  border-radius: var(--r-lg); background: var(--m3-surface-1);
+  border: 1px solid var(--m3-outline-var); box-shadow: var(--shadow-1);
+  overflow: hidden; transition: transform .14s, box-shadow .18s;
+  animation: rise .35s cubic-bezier(.2,.8,.2,1) both;
+}
+.tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-2); }
+
+.tile-head {
+  position: relative; padding: 16px 16px 44px;
+  color: var(--bank-fg, #fff);
+  background: linear-gradient(135deg, var(--bank-a), var(--bank-b));
+  overflow: hidden;
+}
+.tile-head .illus { position: absolute; inset: 0; opacity: .9; pointer-events: none; }
+.tile-head-row { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.tile-bank {
+  display: inline-flex; align-items: center; gap: 8px; font-size: 11.5px;
+  font-weight: 700; letter-spacing: .6px; text-transform: uppercase;
+  opacity: .92;
+}
+.tile-bank .glyph {
+  width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
+  background: rgba(255,255,255,.2); font-size: 12px; font-weight: 800;
+  backdrop-filter: blur(2px);
+}
+.tile-network { position: relative; font-size: 11px; font-weight: 700; opacity: .9;
+  padding: 4px 9px; border-radius: 999px; background: rgba(255,255,255,.16); }
+.tile-name {
+  position: relative; margin: 14px 0 0; font-size: 21px; font-weight: 800;
+  letter-spacing: -.3px; line-height: 1.15;
+}
+.tile-menu-btn { color: var(--bank-fg, #fff); }
+.tile-menu-btn:hover { background: rgba(255,255,255,.18); color: var(--bank-fg, #fff); }
+
+/* number strip straddling the header/body */
+.tile-number {
+  position: relative; margin: -30px 16px 0; z-index: 2;
+  background: var(--m3-surface); border: 1px solid var(--m3-outline-var);
+  border-radius: 14px; box-shadow: var(--shadow-1);
+  padding: 12px 12px 12px 14px; display: flex; align-items: center; gap: 10px;
+}
+.tile-number .num {
+  font-size: 17px; font-weight: 700; letter-spacing: 1.5px; flex: 1;
+  font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; color: var(--m3-on-surface);
+}
+.tile-body { padding: 12px 16px 8px; display: flex; gap: 10px; }
+.detail { flex: 1; min-width: 0; }
+.detail .k {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase;
+  color: var(--m3-on-surface-var); margin-bottom: 2px;
+}
+.detail .v {
+  font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.detail .v.secret { letter-spacing: 2px; }
+.tile-foot {
+  display: flex; align-items: center; gap: 4px; padding: 6px 12px 12px;
+  border-top: 1px solid var(--m3-outline-var); margin-top: 6px;
+}
+.tile-foot .spacer { flex: 1; }
+.chip-btn {
+  display: inline-flex; align-items: center; gap: 6px; border: none;
+  background: transparent; color: var(--m3-on-surface-var);
+  font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 999px;
+  transition: background .15s, color .15s;
+}
+.chip-btn:hover { background: var(--m3-surface-3); color: var(--m3-on-surface); }
+.mini-copy {
+  width: 28px; height: 28px; border-radius: 8px; border: none; background: transparent;
+  color: var(--m3-on-surface-var); display: grid; place-items: center; flex: 0 0 auto;
+  transition: background .15s, color .15s;
+}
+.mini-copy:hover { background: var(--m3-surface-3); color: var(--m3-primary); }
+
+/* =========================================================================
+   Empty + skeleton
+   ========================================================================= */
+.empty { text-align: center; padding: 64px 20px; color: var(--m3-on-surface-var); }
+.empty-art { margin-bottom: 6px; }
+.empty h2 { margin: 8px 0 4px; color: var(--m3-on-surface); }
+.empty p { margin: 0 0 20px; }
+.empty-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+.skeleton-wrap {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px; margin-top: 24px;
+}
+.sk {
+  height: 232px; border-radius: var(--r-lg); border: 1px solid var(--m3-outline-var);
+  background: linear-gradient(100deg, var(--m3-surface-1) 30%, var(--m3-surface-3) 50%, var(--m3-surface-1) 70%);
+  background-size: 200% 100%; animation: shimmer 1.3s infinite linear;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* =========================================================================
+   Sheet (add/edit) + modal + menu + snackbar
+   ========================================================================= */
+.sheet-scrim, .modal-scrim {
+  position: fixed; inset: 0; z-index: 60; background: var(--m3-scrim);
+  display: grid; animation: fade .2s ease;
+}
+.sheet-scrim { place-items: end center; }
+.modal-scrim { place-items: center; padding: 20px; }
+.sheet {
+  width: min(520px, 100%); max-height: 92vh; overflow-y: auto;
+  background: var(--m3-surface-1); border-radius: 28px 28px 0 0;
+  box-shadow: var(--shadow-3); animation: slideup .3s cubic-bezier(.2,.8,.2,1);
+}
+@media (min-width: 560px) {
+  .sheet-scrim { place-items: center; }
+  .sheet { border-radius: 28px; animation: rise .3s cubic-bezier(.2,.8,.2,1); }
+}
+.sheet-head {
+  position: sticky; top: 0; background: var(--m3-surface-1); z-index: 2;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 20px 8px;
+}
+.sheet-head h2 { margin: 0; font-size: 20px; }
+.sheet-body { padding: 4px 20px 20px; }
+.sheet-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+/* Import (bulk paste) */
+.import-hint { margin: 4px 0 8px; font-size: 14px; color: var(--m3-on-surface-var); }
+.import-cols {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12.5px;
+  font-weight: 700; color: var(--m3-primary); background: var(--m3-surface-2);
+  border: 1px solid var(--m3-outline-var); border-radius: 10px; padding: 10px 12px;
+}
+.import-note { margin: 8px 0 10px; font-size: 12.5px; color: var(--m3-on-surface-var); line-height: 1.5; }
+.import-area {
+  width: 100%; min-height: 150px; resize: vertical; font-size: 13px;
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace; line-height: 1.6;
+  color: var(--m3-on-surface); background: var(--m3-surface-2);
+  border: 1px solid var(--m3-outline-var); border-radius: 12px; padding: 12px 14px;
+  outline: none; transition: border-color .18s;
+}
+.import-area:focus { border-color: var(--m3-primary); }
+.import-area::placeholder { color: var(--m3-outline); }
+.import-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
+.import-count { font-size: 13px; font-weight: 600; color: var(--m3-on-surface-var); }
+.import-count.ready { color: var(--m3-primary); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.modal {
+  width: min(440px, 100%); background: var(--m3-surface-1); border-radius: 28px;
+  box-shadow: var(--shadow-3); padding: 26px; animation: rise .26s cubic-bezier(.2,.8,.2,1);
+}
+.modal h2 { margin: 0 0 6px; font-size: 20px; }
+.modal p { margin: 0 0 18px; color: var(--m3-on-surface-var); font-size: 14px; }
+.modal-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; }
+.reveal-badge {
+  width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center;
+  color: var(--m3-on-primary); background: linear-gradient(135deg, var(--m3-primary), #7a86c4);
+  margin-bottom: 14px;
+}
+.detail-list { display: grid; gap: 2px; margin: 6px 0 4px; }
+.detail-list .row {
+  display: flex; align-items: center; gap: 10px; padding: 12px 4px;
+  border-bottom: 1px solid var(--m3-outline-var);
+}
+.detail-list .row:last-child { border-bottom: none; }
+.detail-list .rk { width: 108px; flex: 0 0 auto; font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px; color: var(--m3-on-surface-var); }
+.detail-list .rv { flex: 1; font-size: 15px; font-weight: 600; word-break: break-word;
+  font-variant-numeric: tabular-nums; }
+
+.menu {
+  position: fixed; z-index: 70; min-width: 196px; padding: 8px;
+  background: var(--m3-surface-2); border: 1px solid var(--m3-outline-var);
+  border-radius: 14px; box-shadow: var(--shadow-3); animation: rise .14s ease;
+}
+.menu button {
+  display: flex; align-items: center; gap: 12px; width: 100%; border: none;
+  background: transparent; color: var(--m3-on-surface); font-size: 14px;
+  padding: 11px 12px; border-radius: 9px; text-align: left;
+}
+.menu button:hover { background: var(--m3-surface-3); }
+.menu button.danger { color: var(--m3-error); }
+.menu button svg { color: var(--m3-on-surface-var); }
+.menu button.danger svg { color: var(--m3-error); }
+.menu .sep { height: 1px; background: var(--m3-outline-var); margin: 6px 4px; }
+
+.snackbar {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px);
+  z-index: 90; background: #2f2f38; color: #f2f0f7; padding: 13px 20px;
+  border-radius: 12px; box-shadow: var(--shadow-3); font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; gap: 10px; opacity: 0; transition: opacity .2s, transform .2s;
+}
+.snackbar.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.snackbar svg { color: #8fe39a; }
+
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideup { from { transform: translateY(40px); } to { transform: none; } }
+
+/* =========================================================================
+   Add-on toggle (Material switch) in the add/edit sheet
+   ========================================================================= */
+.switch-row {
+  display: flex; align-items: center; gap: 12px; margin: 16px 0 4px;
+  padding: 12px 14px; border-radius: var(--r-md); cursor: pointer;
+  background: var(--m3-surface-2); border: 1px solid var(--m3-outline-var);
+  transition: background .18s, border-color .18s;
+}
+.switch-row:hover { background: var(--m3-surface-3); }
+.switch-ico {
+  flex: 0 0 auto; width: 38px; height: 38px; border-radius: 11px;
+  display: grid; place-items: center; color: var(--m3-on-primary);
+  background: linear-gradient(135deg, var(--m3-primary), #7a86c4);
+  box-shadow: var(--shadow-1); transition: filter .18s;
+}
+.switch-ico .ic-addon { display: none; }
+.switch-text { flex: 1; min-width: 0; }
+.switch-label { font-size: 14.5px; font-weight: 700; color: var(--m3-on-surface); }
+.switch-help { font-size: 12px; color: var(--m3-on-surface-var); line-height: 1.4; margin-top: 2px; }
+.switch-input { position: absolute; opacity: 0; width: 0; height: 0; }
+.switch-track {
+  flex: 0 0 auto; width: 46px; height: 28px; border-radius: 999px;
+  background: var(--m3-surface-variant); border: 2px solid var(--m3-outline);
+  position: relative; transition: background .2s, border-color .2s;
+}
+.switch-thumb {
+  position: absolute; top: 4px; left: 4px; width: 16px; height: 16px;
+  border-radius: 50%; background: var(--m3-outline);
+  transition: transform .22s cubic-bezier(.2,.8,.2,1), width .22s, height .22s, top .22s, left .22s, background .2s;
+}
+/* Checked = this is an add-on card */
+.switch-input:checked ~ .switch-track {
+  background: var(--m3-primary); border-color: var(--m3-primary);
+}
+.switch-input:checked ~ .switch-track .switch-thumb {
+  background: var(--m3-on-primary); width: 20px; height: 20px; top: 2px; left: 2px;
+  transform: translateX(18px);
+}
+.switch-input:focus-visible ~ .switch-track { outline: 2px solid var(--m3-primary); outline-offset: 3px; }
+/* When add-on is on, flip the leading icon + accent to the add-on identity */
+.switch-row.is-addon .switch-ico { background: linear-gradient(135deg, #8a5cf6, #b07be8); }
+.switch-row.is-addon .switch-ico .ic-primary { display: none; }
+.switch-row.is-addon .switch-ico .ic-addon { display: block; }
+
+/* 2.0: Virtual / Dual - two compact switches side by side in the sheet */
+.mark-row { display: flex; gap: 10px; margin: 14px 0 4px; }
+.mark-toggle {
+  flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 8px;
+  padding: 10px 10px 10px 12px; border-radius: var(--r-md); cursor: pointer;
+  background: var(--m3-surface-2); border: 1px solid var(--m3-outline-var);
+  transition: background .18s, border-color .18s;
+}
+.mark-ico { flex: 0 0 auto; display: grid; place-items: center; color: var(--m3-on-surface-var); transition: color .18s; }
+.mark-label { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; color: var(--m3-on-surface);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mark-toggle .switch-track { width: 40px; height: 24px; }
+.mark-toggle .switch-thumb { top: 3px; left: 3px; width: 14px; height: 14px; }
+.mark-toggle .switch-input:checked ~ .switch-track .switch-thumb { width: 16px; height: 16px; top: 2px; left: 2px; transform: translateX(16px); }
+.mark-toggle:has(.switch-input:checked) { border-color: var(--m3-primary); }
+.mark-toggle:has(.switch-input:checked) .mark-ico { color: var(--m3-primary); }
+
+/* =========================================================================
+   Role badge on a card tile (primary vs add-on)
+   ========================================================================= */
+.tile-role {
+  display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto;
+  font-size: 10px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase;
+  padding: 4px 8px 4px 6px; border-radius: 999px;
+  background: rgba(255,255,255,.18); color: var(--bank-fg, #fff);
+  backdrop-filter: blur(2px);
+}
+.tile-role svg { width: 12px; height: 12px; }
+.tile-role.addon { background: rgba(0,0,0,.22); }
+
+/* =========================================================================
+   Relationship view — knowledge graph of primaries + add-ons
+   ========================================================================= */
+.rel-content { padding-top: 18px; }
+.rel-intro {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;
+  flex-wrap: wrap; margin: 6px 0 22px; padding: 18px 20px; border-radius: var(--r-lg);
+  background: var(--m3-surface-1); border: 1px solid var(--m3-outline-var);
+  box-shadow: var(--shadow-1);
+}
+.rel-intro-text { flex: 1; min-width: 260px; }
+.rel-intro-text h2 { margin: 0 0 6px; font-size: 19px; letter-spacing: -.3px; }
+.rel-intro-text p { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--m3-on-surface-var); max-width: 640px; }
+.rel-intro-text b { color: var(--m3-on-surface); }
+.rel-legend { display: flex; gap: 16px; flex: 0 0 auto; padding-top: 2px; }
+.rel-key { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: var(--m3-on-surface-var); }
+.rel-dot { width: 14px; height: 14px; border-radius: 50%; }
+.rel-dot.bank { background: linear-gradient(135deg, #4f5b92, #23306b); }
+.rel-dot.primary { background: linear-gradient(135deg, var(--m3-primary), #7a86c4); }
+.rel-dot.addon { background: var(--m3-surface-2); border: 2px solid var(--m3-outline); }
+
+/* On the Relationship tab the bank filter stays visible (it drives the graph),
+   but the My-Cards-only network filter is hidden to keep the bar clean. */
+#app.rel-mode #netToggleSlot,
+#app.rel-mode .netfilter { display: none !important; }
+
+/* Single joint-graph stage: one pane holding every bank's tree */
+.rel-stage {
+  position: relative; border-radius: var(--r-lg); overflow: hidden;
+  background:
+    radial-gradient(1200px 500px at 50% -20%, color-mix(in srgb, var(--m3-primary) 12%, transparent), transparent 60%),
+    var(--m3-surface-1);
+  border: 1px solid var(--m3-outline-var); box-shadow: var(--shadow-1);
+  height: min(70vh, 680px); min-height: 460px;
+}
+.rel-canvas { position: absolute; inset: 0; }
+.rel-canvas svg { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+.rel-canvas svg.dragging { cursor: grabbing; }
+.rel-controls {
+  position: absolute; top: 14px; right: 14px; z-index: 3;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.rel-ctl {
+  width: 38px; height: 38px; border-radius: 11px; border: 1px solid var(--m3-outline-var);
+  background: color-mix(in srgb, var(--m3-surface-1) 88%, transparent); backdrop-filter: blur(6px);
+  color: var(--m3-on-surface); display: grid; place-items: center;
+  box-shadow: var(--shadow-1); transition: background .15s, transform .12s, color .15s;
+}
+.rel-ctl:hover { background: var(--m3-surface-3); color: var(--m3-primary); transform: translateY(-1px); }
+.rel-ctl:active { transform: translateY(0); }
+/* Full-screen toggle swaps between the enter (expand) and exit (collapse) glyphs */
+.rel-ctl .ic-exit { display: none; }
+.rel-ctl.is-full .ic-enter { display: none; }
+.rel-ctl.is-full .ic-exit { display: block; }
+.rel-hint {
+  position: absolute; left: 14px; bottom: 12px; z-index: 3; pointer-events: none;
+  font-size: 11.5px; font-weight: 600; color: var(--m3-on-surface-var);
+  background: color-mix(in srgb, var(--m3-surface-1) 82%, transparent); backdrop-filter: blur(6px);
+  padding: 5px 10px; border-radius: 999px; border: 1px solid var(--m3-outline-var);
+}
+
+/* Nodes in the joint graph */
+.gnode { cursor: pointer; }
+.gnode .ndot { transition: filter .16s; }
+.gnode:hover .ndot { filter: brightness(1.09); }
+.gnode .halo { opacity: 0; transition: opacity .16s; }
+.gnode:hover .halo { opacity: 1; }
+.glabel { pointer-events: none; font-family: var(--font); }
+.g-pulse { transform-box: fill-box; transform-origin: center; animation: gpulse 2.8s ease-in-out infinite; }
+@keyframes gpulse { 0%,100% { opacity: .26; transform: scale(1); } 50% { opacity: .05; transform: scale(1.5); } }
+@media (prefers-reduced-motion: reduce) { .g-pulse { animation: none; } }
+
+/* One bank = one section (its own colour language) */
+.rel-bank { margin-bottom: 10px; }
+.rel-bank-head { display: flex; align-items: center; gap: 10px; padding: 10px 4px 14px; }
+.rel-bank-head .glyph {
+  width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
+  font-size: 11px; font-weight: 800; letter-spacing: .3px; color: var(--bank-fg, #fff);
+  background: linear-gradient(135deg, var(--bank-a, var(--m3-primary)), var(--bank-b, #7a86c4));
+  box-shadow: var(--shadow-1);
+}
+.rel-bank-head .bank-title { font-size: 16px; font-weight: 800; letter-spacing: -.2px; }
+.rel-bank-head .count {
+  min-width: 22px; height: 22px; padding: 0 7px; border-radius: 999px;
+  display: inline-grid; place-items: center; font-size: 11.5px; font-weight: 700;
+  background: var(--m3-surface-2); color: var(--m3-on-surface-var);
+}
+
+.rel-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px;
+}
+/* One constellation = one primary card + its add-ons */
+.rel-panel {
+  border-radius: var(--r-lg); background: var(--m3-surface-1);
+  border: 1px solid var(--m3-outline-var); box-shadow: var(--shadow-1);
+  overflow: hidden; animation: rise .4s cubic-bezier(.2,.8,.2,1) both;
+  transition: box-shadow .18s, transform .14s;
+  --bank-a: var(--m3-primary); --bank-b: #7a86c4;
+}
+.rel-panel:hover { box-shadow: var(--shadow-2); transform: translateY(-2px); }
+.rel-panel-head {
+  display: flex; align-items: center; gap: 10px; padding: 14px 16px;
+  color: #fff; background: linear-gradient(135deg, var(--bank-a), var(--bank-b));
+}
+.rel-panel-head .rp-glyph {
+  width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
+  background: rgba(255,255,255,.2); font-size: 11px; font-weight: 800; backdrop-filter: blur(2px);
+}
+.rel-panel-head .rp-title { flex: 1; min-width: 0; }
+.rel-panel-head .rp-name { font-size: 15px; font-weight: 800; letter-spacing: -.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rel-panel-head .rp-sub { font-size: 11px; font-weight: 600; opacity: .85; }
+.rel-panel-head .rp-count {
+  flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 4px 9px; border-radius: 999px;
+  background: rgba(255,255,255,.2);
+}
+.rel-panel.orphan .rel-panel-head { background: linear-gradient(135deg, #5b5c66, #7a7b88); }
+.rel-panel svg.graph { display: block; width: 100%; height: auto; }
+
+/* Nodes in the SVG graph */
+.gnode { cursor: pointer; }
+.gnode .halo { opacity: 0; transition: opacity .18s; }
+.gnode:hover .halo { opacity: 1; }
+.gnode:hover .ndot { filter: brightness(1.07); }
+.gnode .ndot { transition: filter .16s; }
+.gnode text { pointer-events: none; }
+.g-pulse { transform-box: fill-box; transform-origin: center; animation: gpulse 2.6s ease-in-out infinite; }
+@keyframes gpulse { 0%,100% { opacity: .28; transform: scale(1); } 50% { opacity: .06; transform: scale(1.5); } }
+@media (prefers-reduced-motion: reduce) { .g-pulse { animation: none; } }
+
+.rel-panel-foot {
+  padding: 8px 12px 12px; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: var(--m3-on-surface-var); font-weight: 600;
+}
+
+@media (max-width: 520px) {
+  .topbar-actions .btn-add span { display: none; }
+  .btn-add { padding: 9px; }
+  .card-grid, .skeleton-wrap { grid-template-columns: 1fr; }
+  .rel-grid { grid-template-columns: 1fr; }
+}
+
+
+/* --- Quit control (macOS builds only) -------------------------------------
+   The Mac app has no console window, so quitting has to be possible from the
+   page itself - including from the activation and lock screens, which are
+   shown before the header exists. Deliberately quiet: it is an escape hatch,
+   not an action anyone should be drawn towards. */
+.lock-quit {
+  display: block;
+  width: auto;            /* never inherit a lock-card button width rule */
+  margin: 18px auto 0;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted, #6b7280);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  opacity: .75;
+}
+.lock-quit:hover { opacity: 1; text-decoration: underline; }
+.lock-quit[hidden] { display: none; }
+
+/* Export one card as text (1.3.6) */
+.modal .export-text {
+  margin: 0 0 12px; padding: 14px 16px; border-radius: 14px;
+  background: var(--m3-surface-3); border: 1px solid var(--m3-outline-var);
+  font: 600 15px/1.7 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums; color: var(--m3-on-surface);
+  white-space: pre-wrap; word-break: break-word; user-select: text;
+}
+.modal p.export-note { font-size: 12.5px; margin-bottom: 0; }
+
+/* 2.0: drawn bank marks in place of the two-letter glyphs */
+.has-mark svg { display: block; flex: none; }

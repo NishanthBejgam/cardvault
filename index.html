@@ -184,6 +184,43 @@ section{padding:56px 0}
 .rv-go svg{width:16px;height:16px;transition:transform .2s}
 .rv:hover .rv-go svg{transform:translateX(3px)}
 
+/* the live-demo button: chip gold on the violet (the colour of a card's chip),
+   a bolt that flashes, a halo pulse and a red dot - the first thing seen */
+.big-row{display:flex;align-items:flex-end;flex-wrap:wrap;gap:14px 28px}
+.try-link{position:relative;isolation:isolate;display:inline-flex;align-items:center;gap:9px;height:50px;padding:0 22px 0 18px;border-radius:14px;background:linear-gradient(135deg,#fff1a8,#ffd23f 40%,#f5a524);color:#2b1600;text-decoration:none;font-weight:800;font-size:17px;white-space:nowrap;box-shadow:0 10px 26px -8px rgba(245,165,36,.9),inset 0 1px 0 rgba(255,255,255,.6);transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+button.try-link{border:0;cursor:pointer;font-family:inherit}
+.try-link:hover{transform:translateY(-2px) scale(1.04)}
+.try-link::after{content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;animation:tryHalo 2s ease-out infinite}
+.try-link .bolt{width:20px;height:20px;color:#8a3b00;animation:bolt 1.6s steps(1) infinite}
+.try-link i{position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:50%;background:#ff2d2d;box-shadow:0 0 0 3px #7041ea;animation:tryDot 1.6s ease-in-out infinite}
+.try-reset i{box-shadow:0 0 0 3px var(--bg)}
+@keyframes tryHalo{0%{box-shadow:0 0 0 0 rgba(255,210,63,.75)}70%,100%{box-shadow:0 0 0 14px rgba(255,210,63,0)}}
+@keyframes bolt{0%,40%,60%,100%{opacity:1;filter:drop-shadow(0 0 5px #fff)}45%,55%{opacity:.25;filter:none}}
+@keyframes tryDot{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+@media(prefers-reduced-motion:reduce){.try-link::after,.try-link .bolt,.try-link i{animation:none}}
+
+/* the live demo: the real app in a phone, scaled to fit (it lays out for a 393 px phone) */
+.try{display:grid;gap:28px;align-items:center}
+@media(min-width:900px){.try{grid-template-columns:auto 1fr;gap:48px}}
+.try-phone{--s:1;width:calc(393px * var(--s) + 20px);height:calc(852px * var(--s) + 20px);margin:0 auto;padding:10px;border-radius:calc(54px * var(--s));background:#000;box-shadow:0 0 0 2px #2a2550,0 30px 80px -30px rgba(124,58,237,.65)}
+.try-screen{position:relative;width:calc(393px * var(--s));height:calc(852px * var(--s));border-radius:calc(44px * var(--s));overflow:hidden;background:#f4f2fb}
+.try-screen iframe{position:absolute;left:0;top:0;width:393px;height:852px;border:0;transform:scale(var(--s));transform-origin:0 0;background:#f4f2fb}
+.try-start{position:absolute;inset:0;border:0;padding:0;cursor:pointer;background:#120f24;display:grid;place-items:center}
+.try-start[hidden]{display:none}
+.try-start img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;filter:saturate(.9) brightness(.55)}
+.try-play{position:relative;display:inline-flex;align-items:center;gap:10px;padding:16px 24px;border-radius:999px;background:var(--grad);color:#fff;font:800 17px/1 inherit;box-shadow:0 12px 30px -8px rgba(124,58,237,.8);animation:tryPulse 2.4s ease-out infinite;transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.try-play svg{width:20px;height:20px}
+.try-start:hover .try-play{transform:scale(1.05)}
+@keyframes tryPulse{0%{box-shadow:0 0 0 0 rgba(124,58,237,.55),0 12px 30px -8px rgba(124,58,237,.8)}70%,100%{box-shadow:0 0 0 18px rgba(124,58,237,0),0 12px 30px -8px rgba(124,58,237,.8)}}
+@media(prefers-reduced-motion:reduce){.try-play{animation:none}}
+.try-tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:560px}
+.tt{padding:20px;border-radius:20px;background:var(--panel);border:1px solid var(--line)}
+.tt b{display:block;font-size:clamp(24px,2.8vw,34px);font-weight:800;letter-spacing:-.03em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.1}
+.tt span{display:block;margin-top:6px;color:var(--muted);font-weight:700;font-size:14.5px}
+.try-acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.try-full{display:inline-flex;align-items:center;height:50px;padding:0 18px;border-radius:14px;font:800 14px/1 inherit;text-decoration:none;background:transparent;color:var(--text);border:1px solid var(--line)}
+@media(min-width:900px){.try-full{display:none}}
+
 footer{padding:24px 0 48px;text-align:center;color:var(--muted);font-weight:700;font-size:14px;display:flex;justify-content:center;align-items:center;gap:10px}
 footer img{width:32px;height:32px;border-radius:9px}
 footer a{color:#c4b5fd;text-decoration:none}
@@ -208,7 +245,9 @@ footer a{color:#c4b5fd;text-decoration:none}
     </div>
 
     <div class="stores">
-      <div class="big"><div class="n" id="users" data-to="300">300+</div><div class="l">CreditCard users on Android &amp; iPhone</div></div>
+      <div class="big"><div class="big-row"><div class="n" id="users" data-to="300">300+</div>
+        <a class="try-link" href="#try"><svg class="bolt" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.5 2 4 13.5h6.5L9.5 22 20 9.5h-6.6L13.5 2Z"/></svg>Try the live demo<i aria-hidden="true"></i></a></div>
+        <div class="l">CreditCard users on Android &amp; iPhone</div></div>
       <div class="qrs">
         <a class="qr" href="https://play.google.com/store/apps/details?id=com.yourcardjourney.cardvault" target="_blank" rel="noopener">
           <img src="assets/qr-android.svg" alt="QR code for Google Play">
@@ -252,6 +291,33 @@ footer a{color:#c4b5fd;text-decoration:none}
       <div class="feat"><figure><img src="assets/13-security-a.webp" alt="" loading="lazy"></figure><p><i></i>Nothing to hack</p></div>
       <div class="feat"><figure><img src="assets/14-security-b.webp" alt="" loading="lazy"></figure><p><i></i>Locked down</p></div>
       <div class="feat"><figure><img src="assets/15-lock.webp" alt="" loading="lazy"></figure><p><i></i>Locks every time</p></div>
+    </div>
+  </section>
+
+  <section id="try">
+    <h2>Try it yourself</h2>
+    <div class="try">
+      <div class="try-phone" id="try-phone">
+        <div class="try-screen">
+          <iframe id="try-frame" title="Card Vault live demo" allow="camera; clipboard-read; clipboard-write"></iframe>
+          <button type="button" class="try-start" id="try-start">
+            <img src="assets/01-cards.webp" alt="">
+            <span class="try-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.5.9l10.4-6.5a1 1 0 0 0 0-1.8L9.5 4.6A1 1 0 0 0 8 5.5Z"/></svg>Start the live demo</span>
+          </button>
+        </div>
+      </div>
+      <div class="try-side">
+        <div class="try-tiles">
+          <div class="tt"><b>23</b><span>sample cards</span></div>
+          <div class="tt"><b>5</b><span>family members</span></div>
+          <div class="tt"><b>Your copy</b><span>no one else sees it</span></div>
+          <div class="tt"><b>Fresh</b><span>every time you open it</span></div>
+        </div>
+        <div class="try-acts">
+          <button type="button" class="try-link try-reset" id="try-reset"><svg class="bolt" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.5 2 4 13.5h6.5L9.5 22 20 9.5h-6.6L13.5 2Z"/></svg>Start over<i aria-hidden="true"></i></button>
+          <a class="try-full" href="demo/" target="_blank" rel="noopener">Open full screen</a>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -423,6 +489,19 @@ const VS = {
     requestAnimationFrame(tick);
   };
   new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { run(); o.disconnect(); } }, {threshold: .4}).observe(n);
+})();
+// the live demo: scale the phone to the window, load the app on the first tap
+(() => {
+  const ph = document.getElementById('try-phone'), fr = document.getElementById('try-frame'), st = document.getElementById('try-start');
+  const fit = () => {
+    const w = Math.min(document.querySelector('.wrap').clientWidth - 32, 413);
+    const h = innerHeight * .88;
+    ph.style.setProperty('--s', Math.min(1, (w - 20) / 393, (h - 20) / 852).toFixed(3));
+  };
+  fit(); addEventListener('resize', fit);
+  const start = () => { fr.src = 'demo/index.html?r=' + Date.now(); st.hidden = true; };
+  st.addEventListener('click', start);
+  document.getElementById('try-reset').addEventListener('click', start);
 })();
 </script>
 </body>

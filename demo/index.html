@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta name="robots" content="noindex" />
+  <meta charset="utf-8" />
+  <!-- 1.3.9 security: only this app's own files may run. Injected script (say
+       from a booby-trapped import file) cannot execute or send anything out.
+       'unsafe-inline' is for style attributes only; there are no inline
+       scripts or on* handlers anywhere in the page. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' data: blob:; media-src 'self' blob: mediastream:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'" />
+  <!-- viewport-fit=cover is what lets the header sit under the notch and the
+       list run to the bottom edge; the safe-area insets in mobile.css put the
+       padding back. maximum-scale stops a double-tap on a card number zooming
+       the whole app, which on this layout is never what the user meant. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#7c3aed" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Card Vault</title>
+  <link rel="icon" href="favicon.svg" />
+  <link rel="stylesheet" href="style.css?v=dbebaad1" />
+  <link rel="stylesheet" href="mobile.css?v=a81e6863" />
+  <link rel="stylesheet" href="demo.css" />
+</head>
+<body>
+
+  <!-- The desktop builds open an ACTIVATION screen here, ahead of the lock
+       screen, for the offline machine-locked licence. The store builds have no
+       licence gate at all: Google Play and the App Store require their own
+       billing for paid features, and iOS has no stable hardware identifier to
+       bind a code to. See HANDOVER-ANDROID.md section 2. -->
+
+  <!-- ===================== LOCK SCREEN ===================== -->
+  <!-- Welcome / unlock: "Vault door" (chosen 05-Oct-2026 from the welcome-
+       screen options page, the twin of Gift Card Vault's "Gift box"). The
+       violet splash carries straight on into this screen, a vault dial sits
+       behind the large Keyhole mark, and the password is in a white sheet
+       rising from the bottom. Behaviour is unchanged: same fields, same ids. -->
+  <div id="lock" class="lock-screen vault-lock" hidden>
+    <svg class="lk-art" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <rect x="-10" y="560" width="420" height="18" fill="#ff7a2f" fill-opacity=".35"/>
+      <g fill="#ffffff" fill-opacity=".12"><circle cx="50" cy="100" r="4"/><circle cx="344" cy="94" r="4"/><circle cx="40" cy="440" r="3"/><circle cx="356" cy="460" r="3"/></g>
+    </svg>
+    <div class="lk-hero">
+      <div class="lk-mark" aria-hidden="true"><svg class="lk-dial" viewBox="0 0 500 500"><g fill="none" stroke="#ffffff"><circle cx="250" cy="250" r="118" stroke-opacity=".12" stroke-width="3"/><circle cx="250" cy="250" r="168" stroke-opacity=".08" stroke-width="14" stroke-dasharray="3 20"/><circle cx="250" cy="250" r="224" stroke-opacity=".05" stroke-width="3"/></g></svg><svg viewBox="13 13 46 46" width="120" height="120"><rect x="13" y="21" width="46" height="31" rx="7" fill="#ffffff"/><rect x="13" y="27" width="46" height="4.6" fill="#ff7a2f"/><g class="an-key"><circle cx="36" cy="40" r="4.6" fill="#4b3fc8"/><path d="M33.59 42.53h4.83l1.61 6.21h-8.05z" fill="#4b3fc8"/></g><rect x="18" y="43.5" width="9" height="2.8" rx="1.4" fill="#4b3fc8" opacity=".55"/><rect x="45" y="43.5" width="9" height="2.8" rx="1.4" fill="#4b3fc8" opacity=".55"/></svg></div>
+      <h1 class="lk-name">Card Vault</h1>
+      <p class="lk-tag">Private · encrypted · offline</p>
+    </div>
+    <div class="lock-card lk-sheet">
+      <div class="lk-handle" aria-hidden="true"></div>
+      <h2 class="lock-title" id="lockTitle">Welcome back</h2>
+      <p class="lock-sub" id="lockSub">Your vault is locked. Unlock to see your cards.</p>
+      <form id="lockForm" autocomplete="off">
+        <div class="field">
+          <input id="lockPw" type="password" placeholder=" " autocomplete="off" required />
+          <label for="lockPw">Master password</label>
+          <button class="pw-eye" type="button" data-eye="lockPw" aria-label="Show password" aria-pressed="false"><svg class="i-eye" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 5C6.5 5 2.7 9.1 1.5 12c1.2 2.9 5 7 10.5 7s9.3-4.1 10.5-7C21.3 9.1 17.5 5 12 5Zm0 11.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Zm0-7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z"/></svg><svg class="i-eye-off" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M3.3 2 2 3.3l3.2 3.2C3.4 7.9 2.1 9.9 1.5 12c1.2 2.9 5 7 10.5 7 1.9 0 3.6-.5 5-1.3l3.7 3.6 1.3-1.3L3.3 2Zm8.7 14.5A4.5 4.5 0 0 1 7.5 12c0-.8.2-1.5.6-2.1l1.5 1.5a2.5 2.5 0 0 0 3 3l1.5 1.5c-.6.4-1.3.6-2.1.6ZM12 5c-1.3 0-2.6.2-3.7.6l1.7 1.7c.6-.2 1.3-.3 2-.3a4.5 4.5 0 0 1 4.5 4.5c0 .7-.1 1.4-.4 2l2.9 2.9c1.6-1.2 2.8-2.8 3.5-4.4C21.3 9.1 17.5 5 12 5Z"/></svg></button>
+        </div>
+        <div class="pw-strength" id="pwStrength" hidden>
+          <div class="pw-bars">
+            <span class="pw-seg"></span><span class="pw-seg"></span>
+            <span class="pw-seg"></span><span class="pw-seg"></span>
+            <span class="pw-seg"></span>
+          </div>
+          <div class="pw-meta">
+            <span class="pw-label" id="pwStrengthLabel"></span>
+            <span class="pw-hint" id="pwStrengthHint"></span>
+          </div>
+        </div>
+        <div class="field" id="lockConfirmWrap" hidden>
+          <input id="lockPw2" type="password" placeholder=" " autocomplete="off" />
+          <label for="lockPw2">Confirm password</label>
+          <button class="pw-eye" type="button" data-eye="lockPw2" aria-label="Show password" aria-pressed="false"><svg class="i-eye" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 5C6.5 5 2.7 9.1 1.5 12c1.2 2.9 5 7 10.5 7s9.3-4.1 10.5-7C21.3 9.1 17.5 5 12 5Zm0 11.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Zm0-7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z"/></svg><svg class="i-eye-off" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M3.3 2 2 3.3l3.2 3.2C3.4 7.9 2.1 9.9 1.5 12c1.2 2.9 5 7 10.5 7 1.9 0 3.6-.5 5-1.3l3.7 3.6 1.3-1.3L3.3 2Zm8.7 14.5A4.5 4.5 0 0 1 7.5 12c0-.8.2-1.5.6-2.1l1.5 1.5a2.5 2.5 0 0 0 3 3l1.5 1.5c-.6.4-1.3.6-2.1.6ZM12 5c-1.3 0-2.6.2-3.7.6l1.7 1.7c.6-.2 1.3-.3 2-.3a4.5 4.5 0 0 1 4.5 4.5c0 .7-.1 1.4-.4 2l2.9 2.9c1.6-1.2 2.8-2.8 3.5-4.4C21.3 9.1 17.5 5 12 5Z"/></svg></button>
+        </div>
+        <p class="lock-error" id="lockError" hidden></p>
+        <button type="button" class="btn btn-tonal btn-block lock-bio" id="bioUnlockBtn" hidden>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a9.7 9.7 0 0 0-5 1.4.9.9 0 1 0 .9 1.5A7.9 7.9 0 0 1 12 3.8a8 8 0 0 1 4.1 1.1.9.9 0 1 0 .9-1.5A9.7 9.7 0 0 0 12 2Zm0 3.6a6.4 6.4 0 0 0-6.4 6.4v3a.9.9 0 0 0 1.8 0v-3a4.6 4.6 0 0 1 9.2 0c0 2.3-.3 4.2-.9 5.8a.9.9 0 0 0 1.7.6c.7-1.8 1-3.9 1-6.4A6.4 6.4 0 0 0 12 5.6Zm0 3a3.4 3.4 0 0 0-3.4 3.4c0 2.6-.4 4.6-1.2 6a.9.9 0 0 0 1.6.9c1-1.7 1.4-4 1.4-6.9a1.6 1.6 0 0 1 3.2 0c0 3-.3 5.3-1 7a.9.9 0 0 0 1.7.6c.8-2 1.1-4.5 1.1-7.6A3.4 3.4 0 0 0 12 8.6Z"/></svg>
+          Unlock with fingerprint
+        </button>
+
+        <button class="btn btn-filled btn-block" id="lockBtn" type="submit">Unlock</button>
+        <p class="lock-terms" id="lockTerms" hidden>
+          By creating a vault you agree to the
+          <button type="button" class="link-btn" id="lockTermsLink">Terms &amp; conditions</button>.
+        </p>
+      </form>
+      <p class="lock-note"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path fill="currentColor" d="M17 9V7A5 5 0 0 0 7 7v2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2ZM9 7a3 3 0 0 1 6 0v2H9Zm3 10a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/></svg> Encrypted on this phone. No cloud, no account, no internet.</p>
+      <div class="lock-credit">
+        <img src="yourcardjourney.png" alt="Your Card Journey" class="credit-logo" />
+        <span class="credit-text">Shared by</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== APP ===================== -->
+  <div id="app" hidden>
+    <!-- Header -->
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 72 72" width="30" height="30"><rect x="13" y="21" width="46" height="31" rx="7" fill="#ffffff"/><rect x="13" y="27" width="46" height="4.6" fill="#ff7a2f" class="an-stripe"/><g class="an-key"><circle cx="36" cy="40" r="4.6" fill="#4b3fc8"/><path d="M33.59 42.53h4.83l1.61 6.21h-8.05z" fill="#4b3fc8"/></g><rect x="18" y="43.5" width="9" height="2.8" rx="1.4" fill="#4b3fc8" opacity=".55"/><rect x="45" y="43.5" width="9" height="2.8" rx="1.4" fill="#4b3fc8" opacity=".55"/></svg>
+          </span>
+          <span class="brand-text">
+            <small class="brand-tag">YOUR PRIVATE</small>
+            <span class="brand-name">Card Vault</span>
+          </span>
+        </div>
+        <div class="topbar-actions">
+          <!-- Network filter trigger lives up here beside the archive/theme/lock
+               controls; its panel drops in below the bank selector when open. -->
+          <span id="netToggleSlot"></span>
+          <!-- Search lives here as an icon and expands OVER the header when
+               tapped (see .topbar-inner.is-searching). It had a permanent
+               full-width row under the tabs, which with the relation row cost
+               ~40% of the first screen before a single card was visible. -->
+          <!-- 1.3.6: the five icon actions share one soft tinted capsule on a
+               phone (header option A); Add stays outside it. A plain wrapper
+               (display: contents) on the desktop layout. -->
+          <div class="act-group">
+          <button class="icon-btn" id="searchBtn" title="Search cards" aria-label="Search cards">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M9.5 3A6.5 6.5 0 0 0 3 9.5 6.5 6.5 0 0 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 0 0 9.5 3zm0 2C11.99 5 14 7.01 14 9.5S11.99 14 9.5 14 5 11.99 5 9.5 7.01 5 9.5 5z"/></svg>
+          </button>
+          <!-- Settings: auto-lock, fingerprint unlock, and moving a vault
+               between this phone and a PC. Sits where the desktop's licence
+               chip was. A gear rather than the upload arrow it started as -
+               the sheet grew past "backup" and the arrow was hiding the two
+               settings people go looking for. -->
+          <button class="icon-btn" id="vaultBtn" title="Settings" aria-label="Settings">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          </button>
+          <button class="icon-btn" id="archiveBtn" title="Show archived cards" aria-label="Show archived cards" aria-pressed="false">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M20.5 4h-17A1.5 1.5 0 0 0 2 5.5v2A1.5 1.5 0 0 0 3.5 9H4v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9h.5A1.5 1.5 0 0 0 22 7.5v-2A1.5 1.5 0 0 0 20.5 4ZM6 9h12v9H6V9Zm3.5 3h5a1 1 0 0 0 0-2h-5a1 1 0 0 0 0 2ZM4 6h16v1H4V6Z"/></svg>
+          </button>
+          <button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">
+            <svg class="i-sun" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0-5h0m0 20h0M4 12H2m20 0h-2M5.6 5.6 4.2 4.2m15.6 15.6-1.4-1.4M5.6 18.4 4.2 19.8M19.8 4.2l-1.4 1.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <svg class="i-moon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+          </button>
+          <button class="icon-btn" id="lockNowBtn" title="Lock vault" aria-label="Lock vault">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 1 4 4.5V11c0 4.7 3.4 8.9 8 10 4.6-1.1 8-5.3 8-10V4.5L12 1Z" opacity=".18"/><path fill="currentColor" d="M12 6.5A2.5 2.5 0 0 0 9.5 9v1H9a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-.5V9A2.5 2.5 0 0 0 12 6.5Zm-1 3.5V9a1 1 0 1 1 2 0v1h-2Z"/></svg>
+          </button>
+          </div>
+          <button class="btn btn-tonal btn-add" id="importBtn" title="Import many cards at once">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M5 20h14v-2H5v2ZM12 3 6.5 8.5 7.9 9.9 11 6.8V16h2V6.8l3.1 3.1 1.4-1.4L12 3Z"/></svg>
+            <span>Import</span>
+          </button>
+          <button class="btn btn-filled btn-add" id="addBtn">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>
+            <span>Add card</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Expanded search. Replaces the header's contents rather than adding a
+           row, so searching costs no permanent vertical space. -->
+      <div class="topbar-search" id="topSearch" hidden>
+        <button class="icon-btn" id="searchBack" aria-label="Close search">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20v-2Z"/></svg>
+        </button>
+        <input id="searchInput" type="search" inputmode="search" autocomplete="off" autocorrect="off"
+               spellcheck="false" enterkeyhint="search"
+               placeholder="Bank, card, nickname, last 4 digits…" aria-label="Search cards" />
+        <button class="icon-btn" id="searchClear" aria-label="Clear search" hidden>
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4 6.4 5Z"/></svg>
+        </button>
+      </div>
+
+      <!-- Tabs. Short labels and an icon-only Priority Pass so the row never
+           wraps to two lines; the relation control sits on the right of the
+           same row rather than taking one of its own. -->
+      <nav class="tabs" role="tablist">
+        <button class="tab is-active" role="tab" aria-selected="true" data-tab="cards">Cards</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="rel">Relations</button>
+        <!-- Priority Pass is a deliberately ISOLATED view: its own list, its
+             own add sheet, and nothing in it is reachable from the card search
+             or the card filters. See the PRIORITY PASS block in app.js. -->
+        <button class="tab tab-icon" role="tab" aria-selected="false" data-tab="pp"
+                title="Priority Pass" aria-label="Priority Pass">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5Z"/></svg>
+        </button>
+        <div class="tabs-right" id="tabsRight">
+          <button type="button" class="rel-pill" id="relPill" aria-haspopup="dialog"></button>
+          <button type="button" class="icon-btn rel-lock" id="relLockBtn" aria-pressed="false"
+                  title="Remember this as my default view">
+            <svg class="ic-unlocked" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M17 8h-1V6.2a4 4 0 0 0-7.9-.8l1.9.4A2 2 0 0 1 14 6.2V8H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2Zm0 11H6v-9h11v9Zm-5.5-2.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>
+            <svg class="ic-locked" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M17 8h-1V6.2A4.2 4.2 0 0 0 11.8 2 4.2 4.2 0 0 0 7.6 6.2V8H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2ZM9.6 6.2a2.2 2.2 0 0 1 4.4 0V8H9.6V6.2ZM12 16.5a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/></svg>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+
+    <!-- Compact filter bar (phones only). Two pills that summarise the current
+         bank and network selection; tapping either opens the filter sheet
+         below, into which #bankbar and #netFilter are MOVED at boot. On a
+         tablet the bar is hidden and those two stay inline, exactly as on the
+         desktop. See setupMobileFilters() in app.js. -->
+    <div class="mfilter-bar" id="mFilterBar" hidden></div>
+
+    <!-- Sticky bank selector -->
+    <div class="bankbar" id="bankbar">
+      <div class="bankbar-scroll" id="bankScroll"></div>
+      <!-- Collapsible network filter: a single "Network" dropdown that only
+           reveals networks (and then their variants) once you open it. -->
+      <div class="netfilter" id="netFilter" hidden></div>
+      <!-- Credit / Debit filter (1.3.0). Lives inside #bankbar so that on a
+           phone it is moved into the filter sheet with the rest. -->
+      <div class="kindfilter" id="kindFilter"></div>
+    </div>
+
+    <!-- Card list -->
+    <main class="content" id="cardsView">
+      <!-- Expiring soon (1.3.5, from Gift Card Vault's nudge): a card that
+           expires this month or next usually means a replacement is on its
+           way. One line above the list; tap for the cards. -->
+      <div class="nudge" id="nudge" role="status" hidden>
+        <button type="button" class="nudge-open" id="nudgeOpen">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 11h-2V7h2v6Zm0 4h-2v-2h2v2Z"/></svg>
+          <span id="nudgeText"></span>
+          <span class="nudge-go">See</span>
+        </button>
+        <button type="button" class="nudge-x" id="nudgeX" aria-label="Dismiss">&times;</button>
+      </div>
+      <div id="sampleBanner" class="sample-banner" hidden></div>
+      <div id="skeleton" class="skeleton-wrap" hidden></div>
+      <div id="cardList" class="card-list"></div>
+      <div id="emptyState" class="empty" hidden>
+        <div class="empty-art" aria-hidden="true">
+          <svg viewBox="0 0 120 90" width="140" height="105"><rect x="14" y="26" width="92" height="54" rx="10" fill="var(--m3-surface-variant)"/><rect x="14" y="38" width="92" height="9" fill="var(--m3-outline)" opacity=".5"/><rect x="24" y="58" width="30" height="7" rx="3.5" fill="var(--m3-outline)" opacity=".5"/><circle cx="90" cy="20" r="15" fill="var(--m3-primary)" opacity=".18"/><path d="M90 13v14M83 20h14" stroke="var(--m3-primary)" stroke-width="3" stroke-linecap="round"/></svg>
+        </div>
+        <h2 id="emptyTitle">No cards yet</h2>
+        <p id="emptyMsg">Add your first card to get started.</p>
+        <div class="empty-actions">
+          <button class="btn btn-filled" id="emptyAddBtn">Add a card</button>
+        </div>
+      </div>
+
+      <!-- Shared branding credit (same across the YourCardJourney apps) -->
+      <footer class="site-credit">
+        <img src="yourcardjourney.png" alt="Your Card Journey" class="credit-logo" />
+        <span class="credit-text">Shared by</span>
+      </footer>
+    </main>
+
+    <!-- ===================== PRIORITY PASS VIEW ===================== -->
+    <!-- Every pass is stored ON the card it belongs to (card.passes[]), so the
+         link "which pass goes with which card" can never be lost, and a vault
+         file moved to the PC still carries them. This view is only a different
+         way of looking at the same cards. -->
+    <main class="content pp-content" id="ppView" hidden>
+      <div class="pp-intro">
+        <div class="pp-intro-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5Z"/></svg>
+        </div>
+        <div>
+          <h2 class="pp-intro-title">Lounge passes, by card</h2>
+          <p class="pp-intro-sub">See at a glance which Priority Pass came with which card and whose it is.</p>
+        </div>
+      </div>
+      <div id="ppList" class="pp-list"></div>
+      <div id="ppEmpty" class="empty" hidden>
+        <div class="empty-art" aria-hidden="true">
+          <svg viewBox="0 0 120 90" width="140" height="105"><rect x="14" y="26" width="92" height="54" rx="10" fill="var(--m3-surface-variant)"/><path d="M78 40l-8 12h-6l3-8h-9l-3 3h-4l2-6-2-6h4l3 3h9l-3-8h6l8 12Z" fill="var(--m3-primary)" opacity=".7"/><rect x="24" y="62" width="30" height="7" rx="3.5" fill="var(--m3-outline)" opacity=".5"/></svg>
+        </div>
+        <h2 id="ppEmptyTitle">No Priority Pass saved yet</h2>
+        <p id="ppEmptyMsg">Add the pass number that came with a card and it will show up here, linked to that card.</p>
+        <div class="empty-actions">
+          <button class="btn btn-filled" id="ppEmptyAddBtn">Add a Priority Pass</button>
+        </div>
+      </div>
+      <footer class="site-credit">
+        <img src="yourcardjourney.png" alt="Your Card Journey" class="credit-logo" />
+        <span class="credit-text">Shared by</span>
+      </footer>
+    </main>
+
+    <!-- ===================== RELATIONSHIP VIEW ===================== -->
+    <!-- A knowledge-graph of each bank's primary cards (hubs) and the add-on
+         cards that branch off them. Styling is isolated per bank: every
+         primary of a bank shares that bank's colour language. -->
+    <main class="content rel-content" id="relView" hidden>
+      <div id="relStage" class="rel-stage" hidden>
+        <div id="relCanvas" class="rel-canvas"></div>
+        <div class="rel-controls">
+          <button class="rel-ctl" id="relZoomIn" title="Zoom in" aria-label="Zoom in">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>
+          </button>
+          <button class="rel-ctl" id="relZoomOut" title="Zoom out" aria-label="Zoom out">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M5 11h14v2H5z"/></svg>
+          </button>
+          <button class="rel-ctl" id="relFull" title="Full screen" aria-label="Toggle full screen">
+            <svg class="ic-enter" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M7 14H5v5h5v-2H7v-3Zm-2-4h2V7h3V5H5v5Zm12 7h-3v2h5v-5h-2v3ZM14 5v2h3v3h2V5h-5Z"/></svg>
+            <svg class="ic-exit" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M5 16h3v3h2v-5H5v2Zm3-8H5v2h5V5H8v3Zm6 11h2v-3h3v-2h-5v5Zm2-11V5h-2v5h5V8h-3Z"/></svg>
+          </button>
+        </div>
+        <div class="rel-hint">Scroll to zoom · drag to pan · click a node for details</div>
+      </div>
+
+      <div id="relEmpty" class="empty" hidden>
+        <div class="empty-art" aria-hidden="true">
+          <svg viewBox="0 0 120 100" width="150" height="125">
+            <line x1="60" y1="50" x2="26" y2="24" stroke="var(--m3-outline)" stroke-width="2.5" opacity=".5"/>
+            <line x1="60" y1="50" x2="96" y2="24" stroke="var(--m3-outline)" stroke-width="2.5" opacity=".5"/>
+            <line x1="60" y1="50" x2="30" y2="82" stroke="var(--m3-outline)" stroke-width="2.5" opacity=".5"/>
+            <line x1="60" y1="50" x2="92" y2="82" stroke="var(--m3-outline)" stroke-width="2.5" opacity=".5"/>
+            <circle cx="60" cy="50" r="16" fill="var(--m3-primary)" opacity=".9"/>
+            <circle cx="26" cy="24" r="9" fill="var(--m3-surface-variant)" stroke="var(--m3-outline)" stroke-width="2"/>
+            <circle cx="96" cy="24" r="9" fill="var(--m3-surface-variant)" stroke="var(--m3-outline)" stroke-width="2"/>
+            <circle cx="30" cy="82" r="9" fill="var(--m3-surface-variant)" stroke="var(--m3-outline)" stroke-width="2"/>
+            <circle cx="92" cy="82" r="9" fill="var(--m3-surface-variant)" stroke="var(--m3-outline)" stroke-width="2"/>
+          </svg>
+        </div>
+        <h2 id="relEmptyTitle">No relationships yet</h2>
+        <p id="relEmptyMsg">Add cards and mark family cards as add-ons to see them branch off each primary card here.</p>
+      </div>
+
+      <footer class="site-credit">
+        <img src="yourcardjourney.png" alt="Your Card Journey" class="credit-logo" />
+        <span class="credit-text">Shared by</span>
+      </footer>
+    </main>
+  </div>
+
+  <!-- ===================== ADD / EDIT SHEET ===================== -->
+  <div id="sheet" class="sheet-scrim" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <div class="sheet-head">
+        <h2 id="sheetTitle">Add card</h2>
+        <!-- Bulk paste is offered here rather than in the header: "adding one
+             card" is the moment you realise you would rather paste twenty,
+             and a header button for it competed for space with the very
+             action it is an alternative to. Hidden while editing an existing
+             card, where it would make no sense - see openSheet(). -->
+        <button class="btn btn-text sheet-alt" id="sheetImportBtn" type="button">Paste many</button>
+        <button class="icon-btn" id="sheetClose" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4 6.4 5Z"/></svg>
+        </button>
+      </div>
+      <form id="cardForm" class="sheet-body" autocomplete="off">
+        <!-- Card scanner (1.3.5): reads the number, expiry, CVV and the name
+             on the card through the camera and fills the fields below.
+             Nothing is saved until Save; no picture is kept. See cardscan.js. -->
+        <!-- 2.0 (feedback): Scan card and Tap card side by side, the first thing
+             the Add card sheet shows. -->
+        <div class="entry-row">
+        <button type="button" class="scan-entry" id="scanCardBtn">
+          <span class="scan-entry-ico"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9Zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/></svg></span>
+          <span class="scan-entry-text">
+            <span class="scan-entry-title">Scan Card</span>
+          </span>
+          <svg class="scan-entry-go" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="m9 6 6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6L9 6Z"/></svg>
+        </button>
+        <!-- 2.0: Tap card - reads the number and expiry off the card's chip
+             over NFC (emv.js). Shown only on phones that can read NFC. -->
+        <button type="button" class="scan-entry tap-entry" id="tapCardBtn" hidden>
+          <span class="scan-entry-ico"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M6.3 5.6a9 9 0 0 1 0 12.8l-1.4-1.4a7 7 0 0 0 0-10l1.4-1.4Zm3.5 2.1a6 6 0 0 1 0 8.6l-1.4-1.4a4 4 0 0 0 0-5.8l1.4-1.4ZM14 4h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm0 2v12h5V6h-5Z"/></svg></span>
+          <span class="scan-entry-text">
+            <span class="scan-entry-title">Tap + NFC</span>
+          </span>
+          <svg class="scan-entry-go" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="m9 6 6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6L9 6Z"/></svg>
+        </button>
+        </div>
+        <!-- Bank (1.3.6): type-ahead, not a dropdown - same pattern as Gift
+             Card Vault's store picker. "st" offers StanChart and SBI (State
+             Bank of India); a bank that is not listed gets "+ Add ... as a new
+             bank", saved to this phone's list. -->
+        <div class="field bank-field">
+          <input id="fBank" placeholder=" " required maxlength="30" autocomplete="off"
+                 autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="next"
+                 role="combobox" aria-autocomplete="list" aria-controls="fBankSug" aria-expanded="false" />
+          <label for="fBank">Bank (type to search)</label>
+          <div class="bank-sug" id="fBankSug" role="listbox" hidden></div>
+        </div>
+        <div class="field">
+          <input id="fName" placeholder=" " required maxlength="40" />
+          <label for="fName">Card name * (e.g. Diners Black)</label>
+        </div>
+        <!-- Card type (1.3.0). Mandatory, two buckets, no blank option: a card
+             is either credit or debit and the filter relies on that. -->
+        <div class="seg-field">
+          <span class="seg-label">Card type</span>
+          <div class="seg" role="radiogroup" aria-label="Card type" id="fKindSeg">
+            <button type="button" class="seg-btn is-on" role="radio" aria-checked="true" data-kind="credit">
+              <svg viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="5" width="20" height="14" rx="3" fill="currentColor" opacity=".25"/><rect x="2" y="8.5" width="20" height="3" fill="currentColor"/><rect x="5" y="14" width="6" height="2" rx="1" fill="currentColor"/></svg>
+              Credit card
+            </button>
+            <button type="button" class="seg-btn" role="radio" aria-checked="false" data-kind="debit">
+              <svg viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="5" width="20" height="14" rx="3" fill="currentColor" opacity=".25"/><circle cx="7" cy="14" r="2" fill="currentColor"/><rect x="12" y="8" width="8" height="2" rx="1" fill="currentColor"/><rect x="12" y="12" width="5" height="2" rx="1" fill="currentColor"/></svg>
+              Debit card
+            </button>
+          </div>
+          <input type="hidden" id="fKind" value="credit" />
+        </div>
+        <div class="field">
+          <input id="fNickname" placeholder=" " maxlength="40" />
+          <label for="fNickname">Nickname (optional, e.g. Travel Card)</label>
+        </div>
+
+        <!-- Add-on toggle: an add-on card branches off the primary card of the
+             same name at the same bank in the Relationship graph. -->
+        <label class="switch-row" for="fAddon">
+          <span class="switch-ico" aria-hidden="true">
+            <svg class="ic-primary" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="m12 2 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.8 3 1.1-6.5L2.6 8.8l6.5-.9L12 2Z"/></svg>
+            <svg class="ic-addon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 3a3 3 0 0 1 1 5.8V10a2 2 0 0 0 2 2h1.2a3 3 0 1 1 0 2H15a4 4 0 0 1-3-1.4A4 4 0 0 1 9 14H7.8a3 3 0 1 1 0-2H9a2 2 0 0 0 2-2V8.8A3 3 0 0 1 12 3Z"/></svg>
+          </span>
+          <span class="switch-text">
+            <span class="switch-label" id="addonLabel">Primary card</span>
+            <span class="switch-help" id="addonHelp">The main card on this account. Turn on for an add-on issued to family.</span>
+          </span>
+          <input type="checkbox" id="fAddon" class="switch-input" />
+          <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+        </label>
+        <div class="field">
+          <input id="fNumber" placeholder=" " inputmode="numeric" maxlength="23" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          <label for="fNumber">Card number</label>
+          <button class="field-clear" id="fNumberClear" type="button" aria-label="Clear card number" hidden>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm4.2 12.8-1.4 1.4L12 13.4l-2.8 2.8-1.4-1.4 2.8-2.8-2.8-2.8 1.4-1.4 2.8 2.8 2.8-2.8 1.4 1.4-2.8 2.8 2.8 2.8Z"/></svg>
+          </button>
+        </div>
+        <p class="lock-error" id="fNumberErr" hidden></p>
+        <div class="field">
+          <input id="fHolder" placeholder=" " maxlength="30" autocomplete="off" spellcheck="false" />
+          <label for="fHolder">Cardholder name</label>
+          <!-- 2.0: one tap clears a wrongly scanned name (shown only when there is one). -->
+          <button class="field-clear" id="fHolderClear" type="button" aria-label="Clear name" hidden>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm4.2 12.8-1.4 1.4L12 13.4l-2.8 2.8-1.4-1.4 2.8-2.8-2.8-2.8 1.4-1.4 2.8 2.8 2.8-2.8 1.4 1.4-2.8 2.8 2.8 2.8Z"/></svg>
+          </button>
+        </div>
+        <!-- Relation (1.3.0): whose card this is. Options come from the
+             Relations list in Settings. -->
+        <div class="field">
+          <select id="fRelation" required></select>
+          <label for="fRelation" class="static-label">Relation (whose card)</label>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <input id="fExpiry" placeholder=" " inputmode="numeric" maxlength="7" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+            <label for="fExpiry">Expiry (MM/YY)</label>
+          </div>
+          <div class="field">
+            <input id="fCvv" placeholder=" " inputmode="numeric" maxlength="4" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+            <label for="fCvv">CVV</label>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <select id="fNetwork" required></select>
+            <label for="fNetwork" class="static-label">Network *</label>
+          </div>
+          <div class="field">
+            <select id="fVariant" required disabled></select>
+            <label for="fVariant" class="static-label">Variant *</label>
+          </div>
+        </div>
+        <!-- 2.0: two optional marks, both OFF for a new card. Each shows as a
+             small tag on the card when on, and can be flipped later from
+             Edit card or the card's ... menu. -->
+        <div class="mark-row">
+          <label class="mark-toggle" for="fVirtual">
+            <span class="mark-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M17 1H7a2 2 0 0 0-2 2v18a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2Zm0 18H7V5h10v14Zm-8-9h6v1.5H9V10Zm0 3h4v1.5H9V13Z"/></svg></span>
+            <span class="mark-label">Virtual card</span>
+            <input type="checkbox" id="fVirtual" class="switch-input" />
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          </label>
+          <label class="mark-toggle" for="fDual">
+            <span class="mark-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M4 7h13a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Zm0 3v2h13v-2H4Zm3-7h13a2 2 0 0 1 2 2v9h-1.5V5.5H7V3Z"/></svg></span>
+            <span class="mark-label">Dual card</span>
+            <input type="checkbox" id="fDual" class="switch-input" />
+            <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+          </label>
+        </div>
+        <div class="field">
+          <textarea id="fNotes" placeholder=" " rows="2" maxlength="200"></textarea>
+          <label for="fNotes">Notes (optional)</label>
+        </div>
+        <input type="hidden" id="fId" />
+        <div class="sheet-foot">
+          <button type="button" class="btn btn-text" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn btn-filled" id="saveBtn">Save card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================== IMPORT SHEET (bulk paste) ===================== -->
+  <div id="importSheet" class="sheet-scrim" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="importTitle">
+      <div class="sheet-head">
+        <h2 id="importTitle">Import cards</h2>
+        <button class="icon-btn" id="importClose" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4 6.4 5Z"/></svg>
+        </button>
+      </div>
+      <div class="sheet-body">
+        <p class="import-hint">
+          Paste one card per line. Separate fields with commas, in this order:
+        </p>
+        <div class="import-cols">Bank, Card name, Number, Holder, Expiry, CVV, Network, Variant, Add-on, Relation</div>
+        <p class="import-note">
+          Only <b>Bank</b> and <b>Card name</b> are required — leave the rest blank
+          (just keep the commas) and fill them in later. The last <b>Add-on</b> column
+          marks family cards: put <b>add-on</b> (or <b>yes</b>) to make it an add-on of
+          the primary card with the same name, or leave it blank for a primary card.
+          <b>Relation</b> says whose card it is (Self, Spouse, Father&hellip;); blank
+          means Self. A header row is ignored.
+        </p>
+        <textarea id="importText" class="import-area" spellcheck="false"
+          placeholder="HDFC, Diners Black, 6011 5920 1111 5421, PRIYA KUMAR, 09/30, 412, Diners Club, Black, add-on, Spouse"></textarea>
+        <div class="import-foot">
+          <span id="importCount" class="import-count">0 cards detected</span>
+          <div style="display:flex;gap:8px">
+            <button type="button" class="btn btn-text" id="importCancel">Cancel</button>
+            <button type="button" class="btn btn-filled" id="importDo" disabled>Add cards</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== RELATION PICKER ===================== -->
+  <div id="relSheet" class="sheet-scrim" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="relSheetTitle">
+      <div class="sheet-head">
+        <h2 id="relSheetTitle">Whose cards?</h2>
+        <button class="icon-btn" id="relSheetClose" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4 6.4 5Z"/></svg>
+        </button>
+      </div>
+      <div class="sheet-body">
+        <div class="rel-list" id="relList"></div>
+        <button type="button" class="btn btn-text btn-block" id="relManageBtn">Manage relations in Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PRIORITY PASS: ADD / EDIT ===================== -->
+  <div id="ppSheet" class="sheet-scrim" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ppSheetTitle">
+      <div class="sheet-head">
+        <h2 id="ppSheetTitle">Add Priority Pass</h2>
+        <button class="icon-btn" id="ppSheetClose" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4 6.4 5Z"/></svg>
+        </button>
+      </div>
+      <form id="ppForm" class="sheet-body" autocomplete="off">
+        <div class="field">
+          <select id="ppCard" required></select>
+          <label for="ppCard" class="static-label">Came with which card *</label>
+        </div>
+        <p class="micro-note" id="ppCardHint"></p>
+        <div class="field">
+          <input id="ppNumber" placeholder=" " required maxlength="30" autocapitalize="characters" />
+          <label for="ppNumber">Priority Pass number *</label>
+          <!-- 2.0: read the pass number (and its expiry) with the camera. -->
+          <button class="field-clear field-scan" id="ppScanBtn" type="button" aria-label="Scan the Priority Pass">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9Zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/></svg>
+          </button>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <input id="ppIssued" type="month" placeholder=" " />
+            <label for="ppIssued" class="static-label">Issued (optional)</label>
+          </div>
+          <div class="field">
+            <input id="ppExpiry" type="month" placeholder=" " />
+            <label for="ppExpiry" class="static-label">Expires (optional)</label>
+          </div>
+        </div>
+        <div class="seg-field">
+          <span class="seg-label">Status</span>
+          <div class="seg" role="radiogroup" aria-label="Status" id="ppStatusSeg">
+            <button type="button" class="seg-btn is-on" role="radio" aria-checked="true" data-status="active">Active</button>
+            <button type="button" class="seg-btn" role="radio" aria-checked="false" data-status="expired">Expired</button>
+          </div>
+          <input type="hidden" id="ppStatus" value="active" />
+        </div>
+        <div class="field">
+          <textarea id="ppNotes" placeholder=" " rows="2" maxlength="200"></textarea>
+          <label for="ppNotes">Notes (optional, e.g. 8 free visits a year)</label>
+        </div>
+        <input type="hidden" id="ppId" />
+        <input type="hidden" id="ppCardId" />
+        <div class="sheet-foot">
+          <button type="button" class="btn btn-text" id="ppCancelBtn">Cancel</button>
+          <button type="submit" class="btn btn-filled" id="ppSaveBtn">Save pass</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================== FILTER (phones) ===================== -->
+  <!-- Deliberately empty in the markup: #bankbar and #netFilter are moved in
+       here at boot on a phone, so there is exactly ONE implementation of the
+       bank chips and the network filter rather than a mobile copy that drifts.
+       With 16 banks the inline selector filled the entire first screen and
+       pushed every card below the fold - that is what this exists to fix. -->
+  <div id="filterSheet" class="sheet-scrim" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="filterTitle">
+      <div class="sheet-head">
+        <h2 id="filterTitle">Filter</h2>
+        <button class="icon-btn" id="filterClose" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4 6.4 5Z"/></svg>
+        </button>
+      </div>
+      <div class="sheet-body" id="filterSheetBody"></div>
+    </div>
+  </div>
+
+  <!-- ===================== VAULT: BACKUP & TRANSFER ===================== -->
+  <!-- The one place in the app that touches a file. It is worded plainly on
+       purpose: the exported file is still encrypted, and it is still only as
+       strong as the master password on it - a user who mails it to themselves
+       with a four-character password has not made a safe backup, and should be
+       told so here rather than find out later. -->
+  <div id="vaultSheet" class="sheet-scrim" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="vaultTitle">
+      <div class="sheet-head">
+        <h2 id="vaultTitle">Settings</h2>
+        <button class="icon-btn" id="vaultClose" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4 6.4 5Z"/></svg>
+        </button>
+      </div>
+      <div class="sheet-body">
+
+        <section class="vault-block">
+          <h3 class="vault-h">On this phone</h3>
+          <p class="vault-note" id="vaultBackupCount">&hellip;</p>
+          <p class="micro-note">
+            Your cards live in this app's private storage, encrypted with your
+            master password. Uninstalling the app deletes them, so keep an
+            export somewhere safe.
+          </p>
+        </section>
+
+        <section class="vault-block" id="lockBlock">
+          <h3 class="vault-h">Auto-lock</h3>
+          <p class="vault-note">
+            When to lock the vault after you switch to another app. Copying a
+            card number usually means a trip to another app and back, so this
+            is not set to lock instantly.
+          </p>
+          <div class="lock-choices" id="lockChoices"></div>
+          <p class="micro-note">
+            Whatever you choose, the card list is never shown in the recent-apps
+            preview, and the vault always locks when the app is closed.
+          </p>
+        </section>
+
+        <section class="vault-block" id="bioBlock" hidden>
+          <h3 class="vault-h">Fingerprint unlock</h3>
+          <p class="vault-note">
+            Opens the vault with your fingerprint instead of typing the master
+            password. Your password is kept in this phone&rsquo;s secure store
+            and released only on a match.
+          </p>
+          <label class="vault-check">
+            <input type="checkbox" id="bioToggle" />
+            <span>Unlock with fingerprint on this phone</span>
+          </label>
+          <!-- 1.3.8: sub-option of the switch above, OFF by default, shown
+               only while it is on. -->
+          <label class="vault-check vault-sub" id="bioAutoRow" hidden>
+            <input type="checkbox" id="bioAutoToggle" />
+            <span id="bioAutoLabel">Unlock with fingerprint when the app opens</span>
+          </label>
+          <p class="lock-error" id="bioMsg" hidden></p>
+        </section>
+
+        <!-- Change master password (1.3.5). Re-encrypts the vault under the
+             new password; fingerprint unlock, if on, is updated to match. -->
+        <section class="vault-block" id="pwBlock">
+          <h3 class="vault-h">Master password</h3>
+          <p class="vault-note">Change the password that encrypts your cards. You need the current one.</p>
+          <button class="btn btn-tonal btn-block" id="pwChangeOpen" type="button">Change master password</button>
+          <form id="pwForm" class="pw-form" autocomplete="off" hidden>
+            <div class="field">
+              <input id="pwCur" type="password" placeholder=" " autocomplete="off" />
+              <label for="pwCur">Current password</label>
+              <button class="pw-eye" type="button" data-eye="pwCur" aria-label="Show password" aria-pressed="false"><svg class="i-eye" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 5C6.5 5 2.7 9.1 1.5 12c1.2 2.9 5 7 10.5 7s9.3-4.1 10.5-7C21.3 9.1 17.5 5 12 5Zm0 11.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Zm0-7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z"/></svg><svg class="i-eye-off" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M3.3 2 2 3.3l3.2 3.2C3.4 7.9 2.1 9.9 1.5 12c1.2 2.9 5 7 10.5 7 1.9 0 3.6-.5 5-1.3l3.7 3.6 1.3-1.3L3.3 2Zm8.7 14.5A4.5 4.5 0 0 1 7.5 12c0-.8.2-1.5.6-2.1l1.5 1.5a2.5 2.5 0 0 0 3 3l1.5 1.5c-.6.4-1.3.6-2.1.6ZM12 5c-1.3 0-2.6.2-3.7.6l1.7 1.7c.6-.2 1.3-.3 2-.3a4.5 4.5 0 0 1 4.5 4.5c0 .7-.1 1.4-.4 2l2.9 2.9c1.6-1.2 2.8-2.8 3.5-4.4C21.3 9.1 17.5 5 12 5Z"/></svg></button>
+            </div>
+            <div class="field">
+              <input id="pwNew" type="password" placeholder=" " autocomplete="off" />
+              <label for="pwNew">New password</label>
+              <button class="pw-eye" type="button" data-eye="pwNew" aria-label="Show password" aria-pressed="false"><svg class="i-eye" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 5C6.5 5 2.7 9.1 1.5 12c1.2 2.9 5 7 10.5 7s9.3-4.1 10.5-7C21.3 9.1 17.5 5 12 5Zm0 11.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Zm0-7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z"/></svg><svg class="i-eye-off" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M3.3 2 2 3.3l3.2 3.2C3.4 7.9 2.1 9.9 1.5 12c1.2 2.9 5 7 10.5 7 1.9 0 3.6-.5 5-1.3l3.7 3.6 1.3-1.3L3.3 2Zm8.7 14.5A4.5 4.5 0 0 1 7.5 12c0-.8.2-1.5.6-2.1l1.5 1.5a2.5 2.5 0 0 0 3 3l1.5 1.5c-.6.4-1.3.6-2.1.6ZM12 5c-1.3 0-2.6.2-3.7.6l1.7 1.7c.6-.2 1.3-.3 2-.3a4.5 4.5 0 0 1 4.5 4.5c0 .7-.1 1.4-.4 2l2.9 2.9c1.6-1.2 2.8-2.8 3.5-4.4C21.3 9.1 17.5 5 12 5Z"/></svg></button>
+            </div>
+            <div class="pw-strength" id="pwNewStrength" hidden>
+              <div class="pw-bars">
+                <span class="pw-seg"></span><span class="pw-seg"></span>
+                <span class="pw-seg"></span><span class="pw-seg"></span>
+                <span class="pw-seg"></span>
+              </div>
+              <div class="pw-meta">
+                <span class="pw-label" id="pwNewStrengthLabel"></span>
+                <span class="pw-hint" id="pwNewStrengthHint"></span>
+              </div>
+            </div>
+            <div class="field">
+              <input id="pwNew2" type="password" placeholder=" " autocomplete="off" />
+              <label for="pwNew2">Confirm new password</label>
+              <button class="pw-eye" type="button" data-eye="pwNew2" aria-label="Show password" aria-pressed="false"><svg class="i-eye" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 5C6.5 5 2.7 9.1 1.5 12c1.2 2.9 5 7 10.5 7s9.3-4.1 10.5-7C21.3 9.1 17.5 5 12 5Zm0 11.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Zm0-7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z"/></svg><svg class="i-eye-off" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M3.3 2 2 3.3l3.2 3.2C3.4 7.9 2.1 9.9 1.5 12c1.2 2.9 5 7 10.5 7 1.9 0 3.6-.5 5-1.3l3.7 3.6 1.3-1.3L3.3 2Zm8.7 14.5A4.5 4.5 0 0 1 7.5 12c0-.8.2-1.5.6-2.1l1.5 1.5a2.5 2.5 0 0 0 3 3l1.5 1.5c-.6.4-1.3.6-2.1.6ZM12 5c-1.3 0-2.6.2-3.7.6l1.7 1.7c.6-.2 1.3-.3 2-.3a4.5 4.5 0 0 1 4.5 4.5c0 .7-.1 1.4-.4 2l2.9 2.9c1.6-1.2 2.8-2.8 3.5-4.4C21.3 9.1 17.5 5 12 5Z"/></svg></button>
+            </div>
+            <p class="lock-error" id="pwMsg" hidden></p>
+            <div class="pw-actions">
+              <button class="btn btn-text" id="pwCancel" type="button">Cancel</button>
+              <button class="btn btn-filled" id="pwSubmit" type="submit">Change password</button>
+            </div>
+            <p class="micro-note">Backups you exported earlier still open with the password they were made with.</p>
+          </form>
+        </section>
+
+        <section class="vault-block" id="relBlock">
+          <h3 class="vault-h">Relations</h3>
+          <p class="vault-note">
+            Who a card can belong to. These are the choices offered when you
+            add or edit a card, and the views you can switch between on the
+            home page. Add your own &mdash; Wife, Dad, Friend, Business
+            Partner &mdash; and remove the ones you never use.
+          </p>
+          <div class="rel-chips" id="relChips"></div>
+          <form class="rel-add" id="relAddForm" autocomplete="off">
+            <input id="relAddInput" placeholder="Add a relation, e.g. Dad" maxlength="30" aria-label="New relation" />
+            <button type="submit" class="btn btn-tonal" id="relAddBtn">Add</button>
+          </form>
+          <p class="lock-error" id="relMsg" hidden></p>
+          <p class="micro-note">
+            A relation that is still used on a card cannot be removed until
+            those cards are moved to another one. <b>Self</b> is always kept.
+          </p>
+        </section>
+
+        <section class="vault-block">
+          <h3 class="vault-h">Export</h3>
+          <p class="vault-note">
+            Saves an encrypted copy you can share to Drive, mail or a cable.
+            It is the same file format the Windows and Mac apps use, so it can
+            be opened there too &mdash; with this same master password.
+          </p>
+          <button class="btn btn-tonal btn-block" id="vaultExport" type="button">Export encrypted backup</button>
+        </section>
+
+        <!-- Changing phones (1.3.5, from Gift Card Vault's tip). App data is
+             NOT carried over by Android backup - that is off on purpose - so
+             the exported file is the only thing that moves the cards. -->
+        <section class="vault-block" id="moveBlock">
+          <h3 class="vault-h">Changing phones?</h3>
+          <p class="vault-note">Your cards do not move by themselves. Four steps:</p>
+          <ol class="move-steps">
+            <li><b>Export</b> above and send the file somewhere you can reach from the new phone: Drive, email, or a chat to yourself.</li>
+            <li><b>Install Card Vault</b> on the new phone with the same Google account. You have already bought it, so it will not charge again.</li>
+            <li><b>Create a vault</b> there. Using the same master password keeps things simple.</li>
+            <li><b>Import</b> the file below on the new phone, with the password it was exported with. Then turn fingerprint unlock on again.</li>
+          </ol>
+          <p class="micro-note">The same file also opens in Card Vault on a Windows PC, a Mac or an iPhone.</p>
+        </section>
+
+        <section class="vault-block">
+          <h3 class="vault-h">Import</h3>
+          <p class="vault-note">
+            Open a <code>vault.dat</code> from your PC or Mac, or a backup
+            exported from another phone.
+          </p>
+          <div class="field">
+            <input id="vaultImportPw" type="password" placeholder=" " autocomplete="off" />
+            <label for="vaultImportPw">Master password of that file</label>
+          </div>
+          <label class="vault-check">
+            <input type="checkbox" id="vaultMerge" />
+            <span>Add to what is already here, instead of replacing it</span>
+          </label>
+          <p class="lock-error" id="vaultMsg" hidden></p>
+          <button class="btn btn-filled btn-block" id="vaultImport" type="button">Choose a file to import</button>
+        </section>
+
+        <!-- Terms & conditions (1.3.6). Read-only and never blocking: existing
+             users find it here and are never prompted; a new user gets a
+             one-line link when creating the vault (#lockTerms). -->
+        <section class="vault-block" id="termsBlock">
+          <h3 class="vault-h">Terms &amp; conditions</h3>
+          <p class="vault-note">
+            Important information about how Card Vault keeps your cards, and
+            what it cannot do for you.
+          </p>
+          <button class="btn btn-tonal btn-block" id="termsOpen" type="button">Read terms &amp; conditions</button>
+        </section>
+
+        <p class="lic-foot">
+          Nothing in this app talks to a network. There is no account, no sync
+          and no server &mdash; a file only ever leaves this phone because you
+          chose to share it.
+        </p>
+        <!-- 2.0: which build this is, and whether the phone's own text reader
+             and NFC were reached (app.js paintAppInfo). -->
+        <p class="app-info" id="appInfo">Card Vault</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== TERMS & CONDITIONS (1.3.6) ===================== -->
+  <div id="termsSheet" class="sheet-scrim" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
+      <div class="sheet-head">
+        <h2 id="termsTitle">Terms &amp; conditions</h2>
+        <button class="icon-btn" id="termsClose" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4 6.4 5Z"/></svg>
+        </button>
+      </div>
+      <div class="sheet-body terms">
+        <p class="terms-date">Last updated 21 October 2026</p>
+        <p class="vault-note">By using Card Vault you agree to the points below. They explain what this app does with your cards, and what it cannot do for you.</p>
+        <ol class="terms-list">
+          <li><b>Your cards stay on this phone.</b> Everything you add is stored only on this phone, encrypted with your master password. YourCardJourney runs no server, keeps no copy, and cannot see, access or restore your cards.</li>
+          <li><b>Your master password cannot be recovered.</b> There is no reset. If it is forgotten, the cards in this vault cannot be opened by you or by us.</li>
+          <li><b>Backups are your responsibility.</b> Uninstalling the app, clearing its data, or resetting or losing the phone deletes the vault. Only an export you made yourself can bring it back.</li>
+          <li><b>Keep your phone secure.</b> Use a screen lock. If fingerprint unlock is on, anyone whose fingerprint was enrolled on this phone when you turned it on can open the vault. Adding a new fingerprint switches it off until you turn it on again.</li>
+          <li><b>What you copy, export or share leaves the app&rsquo;s protection.</b> Copied details are cleared from the clipboard after a short time on a best-effort basis. Text or files you share are kept wherever you send them.</li>
+          <li><b>Store only your own cards,</b> or family members&rsquo; cards with their consent.</li>
+          <li><b>Card Vault is not a bank or payment app.</b> It cannot make payments, and it is not affiliated with or endorsed by any bank or card network. Bank and network names belong to their owners and are used only to label your cards.</li>
+          <li><b>Check what the app fills in.</b> The card scanner and expiry reminders are aids. Always check card details before you save or use them.</li>
+          <li><b>The app is provided &ldquo;as is&rdquo;, without warranties.</b> To the extent the law allows, YourCardJourney is not liable for any loss arising from a lost, stolen or compromised phone, a forgotten master password, deleted data, or the use or misuse of card details. Our total liability is limited to the price you paid for the app.</li>
+          <li><b>Governing law.</b> These terms are governed by the laws of India, and any dispute is subject to the courts of Hyderabad, Telangana. We may update these terms in a future version of the app; continuing to use the app means you accept the updated terms.</li>
+        </ol>
+        <h3 class="vault-h terms-sec">How your cards are protected</h3>
+        <ul class="terms-list">
+          <li><b>Nothing central to hack.</b> There is no account, no server and no cloud copy of your vault.</li>
+          <li><b>Strong encryption.</b> Your cards are kept in one AES-encrypted file with a tamper check, locked with a key made from your master password.</li>
+          <li><b>Fingerprint unlock lives in the secure chip.</b> If you turn it on, your master password is kept in the phone&rsquo;s secure hardware and released only on a fingerprint match.</li>
+          <li><b>No internet access.</b> The internet permission is removed from the app, so Android itself blocks any network connection.</li>
+          <li><b>It never leaves on its own.</b> Android cloud backup and phone-to-phone transfer are turned off for this app, and debugging is off.</li>
+          <li><b>Hidden from view.</b> Screenshots, screen recording, screen sharing and the recent-apps preview are blocked. Apps that misuse accessibility cannot read the vault, and other apps cannot draw over it while it is open.</li>
+          <li><b>Only Card Vault&rsquo;s own code runs.</b> A file you import can add cards, never run anything.</li>
+          <li><b>The small things too.</b> Card numbers are masked until you tap and hide again after 45 seconds, copied numbers clear from the clipboard after 45 seconds, the CVV is left out of shared details unless you include it, and card scanning runs offline on the phone.</li>
+        </ul>
+        <p class="vault-note">Privacy policy: yourcardjourney.store/privacy/card-vault<br />Questions: <b>hello@yourcardjourney.store</b></p>
+        <button class="btn btn-filled btn-block" id="termsDone" type="button">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== REVEAL / DETAILS / CONFIRM ===================== -->
+  <div id="modal" class="modal-scrim" hidden>
+    <div class="modal" role="dialog" aria-modal="true" id="modalBox"></div>
+  </div>
+
+  <!-- Overflow menu -->
+  <div id="menu" class="menu" hidden></div>
+
+  <!-- Snackbar -->
+  <div id="snackbar" class="snackbar" hidden></div>
+
+  <!-- Load order matters: fernet -> store -> vault -> mobile build up
+       window.YCJ, api.js hangs the route table off it, and app.js (the desktop
+       UI, unchanged) consumes window.YCJ.api on its first line. -->
+  <!-- ===================== CARD SCANNER (1.3.5) ===================== -->
+  <!-- Full-screen viewfinder over the Add card sheet. The camera runs only
+       while this is on screen; closing it, locking or leaving the app stops
+       it. Frames are read in memory and dropped - nothing is stored. -->
+  <div id="scanner" class="scanner" hidden>
+    <div class="scanner-top">
+      <button class="icon-btn scanner-x" id="scanClose" type="button" aria-label="Close scanner">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4 6.4 5Z"/></svg>
+      </button>
+      <span class="scanner-title" id="scanTitle">Scan card</span>
+      <!-- 2.0: torch (only where the phone has one) and next lens (only with
+           two or more back cameras; the choice is remembered). -->
+      <span class="scanner-tools">
+        <button class="icon-btn scanner-tool" id="scanTorch" type="button" aria-label="Torch" aria-pressed="false" hidden>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M7 2h10v4l-2 3v13H9V9L7 6V2Zm2 2v1.4L11 8.4V20h2V8.4l2-3V4H9Zm2 7h2v3h-2v-3Z"/></svg>
+        </button>
+        <button class="icon-btn scanner-tool" id="scanLens" type="button" aria-label="Switch camera lens" hidden>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9Zm3 4.5a5.5 5.5 0 0 1 5.2 3.7l1.3-1.2.9 1-3 2.8-2.8-3 1-.9 1.2 1.3A4 4 0 0 0 8.4 11L7 10.5A5.5 5.5 0 0 1 12 7.5Zm-4.4 4.2 2.8 3-1 .9-1.2-1.3a4 4 0 0 0 7.4 1.7l1.4.5a5.5 5.5 0 0 1-10.2-.2l-1.3 1.2-.9-1 3-2.8Z"/></svg>
+        </button>
+      </span>
+    </div>
+    <div class="scanner-stage">
+      <div class="scanner-view" id="scanView">
+        <video id="scanVideo" playsinline muted autoplay></video>
+        <span class="sv-corner tl"></span><span class="sv-corner tr"></span>
+        <span class="sv-corner bl"></span><span class="sv-corner br"></span>
+        <span class="sv-sweep" aria-hidden="true"></span>
+      </div>
+      <p class="scanner-tip" id="scanTip">Hold the front of the card inside the frame</p>
+      <p class="scanner-err" id="scanErr" hidden></p>
+    </div>
+    <div class="scanner-panel">
+      <div class="sp-row" data-k="number"><span class="sp-k" id="spNumberLabel">Card number</span><span class="sp-v" id="spNumber">&mdash;</span><button class="sp-pin" type="button" data-pin="number" aria-label="Lock card number" aria-pressed="false" disabled><svg class="i-unl" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6-9H9V6a3 3 0 0 1 5.9-.8l1.9-.5A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm0 12H6V10h12v10Z"/></svg><svg class="i-lck" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2ZM9 6a3 3 0 0 1 6 0v2H9V6Zm3 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/></svg></button></div>
+      <div class="sp-row" data-k="expiry"><span class="sp-k">Expiry</span><span class="sp-v" id="spExpiry">&mdash;</span><button class="sp-pin" type="button" data-pin="expiry" aria-label="Lock expiry" aria-pressed="false" disabled><svg class="i-unl" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6-9H9V6a3 3 0 0 1 5.9-.8l1.9-.5A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm0 12H6V10h12v10Z"/></svg><svg class="i-lck" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2ZM9 6a3 3 0 0 1 6 0v2H9V6Zm3 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/></svg></button></div>
+      <div class="sp-row" data-k="cvv"><span class="sp-k">CVV <small>back of card</small></span><span class="sp-v" id="spCvv">&mdash;</span><button class="sp-pin" type="button" data-pin="cvv" aria-label="Lock CVV" aria-pressed="false" disabled><svg class="i-unl" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6-9H9V6a3 3 0 0 1 5.9-.8l1.9-.5A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm0 12H6V10h12v10Z"/></svg><svg class="i-lck" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2ZM9 6a3 3 0 0 1 6 0v2H9V6Zm3 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/></svg></button></div>
+      <div class="sp-row" data-k="name"><span class="sp-k">Name on card</span><span class="sp-v" id="spName">&mdash;</span><button class="sp-pin" type="button" data-pin="name" aria-label="Lock name on card" aria-pressed="false" disabled><svg class="i-unl" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6-9H9V6a3 3 0 0 1 5.9-.8l1.9-.5A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm0 12H6V10h12v10Z"/></svg><svg class="i-lck" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2ZM9 6a3 3 0 0 1 6 0v2H9V6Zm3 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/></svg></button></div>
+      <div class="scanner-actions">
+        <button class="btn btn-text" id="scanManual" type="button">Type it in</button>
+        <button class="btn btn-filled" id="scanUse" type="button" disabled>Use these details</button>
+      </div>
+      <p class="scanner-note">Tap the lock beside a value once it is right, so it stays. Read on this phone; no photo is kept.</p>
+    </div>
+  </div>
+
+  <script src="core/fernet.js?v=c2145f07"></script>
+  <script src="core/store.js?v=e1701bec"></script>
+  <script src="core/vault.js?v=c59572be"></script>
+  <script src="core/mobile.js?v=d92dc155"></script>
+  <script src="api.js?v=e7cab58c"></script>
+  <!-- 2.0: Tap card. On iPhone the system's own NFC sheet is shown instead. -->
+  <div id="nfcWait" class="nfc-wait" hidden>
+    <div class="nfc-card" role="dialog" aria-modal="true" aria-labelledby="nfcTitle">
+      <div class="nfc-anim" aria-hidden="true"><span class="nfc-phone"></span><span class="nfc-plastic"></span></div>
+      <h2 class="nfc-title" id="nfcTitle">Hold your card to the back of the phone</h2>
+      <p class="nfc-sub" id="nfcSub">Keep it still for a second, near the camera. Nothing is charged - only the number and expiry are read.</p>
+      <button class="btn btn-tonal btn-block" id="nfcCancel" type="button">Cancel</button>
+    </div>
+  </div>
+
+  <script src="cardscan.js?v=6795d3ee"></script>
+  <script src="emv.js?v=8c7fd840"></script>
+  <script src="demo-pre.js"></script>
+  <script src="app.js?v=f5f4ab7f"></script>
+  <script src="demo.js"></script>
+</body>
+</html>
